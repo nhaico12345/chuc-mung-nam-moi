@@ -88,11 +88,12 @@ function triggerCelebration() {
 }
 
 // ============================================
-// 3. PHÁO HOA - FIREWORKS (Canvas 2D)
+// 3. PHÁO HOA NÂNG CAO - ADVANCED FIREWORKS
 // ============================================
 const canvas = document.getElementById('fireworks-canvas');
 const ctx = canvas.getContext('2d');
-let fireworkParticles = [];
+let rockets = [];
+let explosionParticles = [];
 let fireworksRunning = false;
 
 function resizeCanvas() {
@@ -103,21 +104,98 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-class FireworkParticle {
-    constructor(x, y, color, velocity, size, life) {
-        this.x = x;
-        this.y = y;
-        this.color = color;
-        this.vx = velocity.x;
-        this.vy = velocity.y;
-        this.size = size;
-        this.life = life;
-        this.maxLife = life;
-        this.gravity = 0.04;
-        this.friction = 0.98;
+// Màu sắc đa dạng
+const FIREWORK_PALETTES = [
+    ['#ff6b9d', '#ff9ec5', '#ffb6d3'],  // Hồng
+    ['#ffd700', '#ffe44d', '#fff176'],  // Vàng
+    ['#c084fc', '#d8b4fe', '#e9d5ff'],  // Tím
+    ['#fb923c', '#fdba74', '#fed7aa'],  // Cam
+    ['#f472b6', '#f9a8d4', '#fbcfe8'],  // Hồng nhạt
+    ['#34d399', '#6ee7b7', '#a7f3d0'],  // Xanh mint
+    ['#ff4466', '#ff6b81', '#ff8fa3'],  // Đỏ
+    ['#60a5fa', '#93c5fd', '#bfdbfe'],  // Xanh dương
+    ['#fbbf24', '#fcd34d', '#fde68a'],  // Vàng ấm
+];
+
+// --- ROCKET (Tên lửa bay lên) ---
+class Rocket {
+    constructor() {
+        this.x = Math.random() * canvas.width * 0.8 + canvas.width * 0.1;
+        this.y = canvas.height + 10;
+        this.targetY = Math.random() * canvas.height * 0.35 + canvas.height * 0.08;
+        this.speed = 4 + Math.random() * 3;
+        this.trail = [];
+        this.palette = FIREWORK_PALETTES[Math.floor(Math.random() * FIREWORK_PALETTES.length)];
+        this.color = this.palette[0];
+        this.exploded = false;
+        this.angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.3;
+        this.vx = Math.cos(this.angle) * this.speed;
+        this.vy = Math.sin(this.angle) * this.speed;
     }
 
     update() {
+        this.trail.push({ x: this.x, y: this.y, alpha: 1 });
+        if (this.trail.length > 12) this.trail.shift();
+        this.trail.forEach(t => t.alpha -= 0.08);
+
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += 0.02; // Nhẹ gravity
+
+        if (this.y <= this.targetY) {
+            this.exploded = true;
+            createExplosion(this.x, this.y, this.palette);
+        }
+    }
+
+    draw() {
+        // Vệt trail
+        this.trail.forEach(t => {
+            if (t.alpha <= 0) return;
+            ctx.save();
+            ctx.globalAlpha = t.alpha * 0.6;
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, 2, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = this.color;
+            ctx.fill();
+            ctx.restore();
+        });
+
+        // Đầu rocket
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff';
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = this.color;
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
+// --- PARTICLE NỔ ---
+class ExplosionParticle {
+    constructor(x, y, color, vx, vy, size, life) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.vx = vx;
+        this.vy = vy;
+        this.size = size;
+        this.life = life;
+        this.maxLife = life;
+        this.gravity = 0.03;
+        this.friction = 0.975;
+        this.trail = [];
+    }
+
+    update() {
+        this.trail.push({ x: this.x, y: this.y, alpha: this.life / this.maxLife });
+        if (this.trail.length > 5) this.trail.shift();
+        this.trail.forEach(t => t.alpha -= 0.15);
+
         this.vx *= this.friction;
         this.vy *= this.friction;
         this.vy += this.gravity;
@@ -128,15 +206,26 @@ class FireworkParticle {
 
     draw() {
         const alpha = this.life / this.maxLife;
+
+        // Vệt trail
+        this.trail.forEach(t => {
+            if (t.alpha <= 0) return;
+            ctx.save();
+            ctx.globalAlpha = t.alpha * 0.3;
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, this.size * 0.5, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+            ctx.restore();
+        });
+
+        // Hạt chính
         ctx.save();
         ctx.globalAlpha = alpha;
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size * alpha, 0, Math.PI * 2);
+        ctx.arc(this.x, this.y, this.size * (0.3 + alpha * 0.7), 0, Math.PI * 2);
         ctx.fillStyle = this.color;
-        ctx.fill();
-
-        // Glow
-        ctx.shadowBlur = 15;
+        ctx.shadowBlur = 12;
         ctx.shadowColor = this.color;
         ctx.fill();
         ctx.restore();
@@ -147,39 +236,142 @@ class FireworkParticle {
     }
 }
 
-function launchFirework() {
-    const x = Math.random() * canvas.width * 0.8 + canvas.width * 0.1;
-    const y = Math.random() * canvas.height * 0.4 + canvas.height * 0.1;
-    const colors = ['#ff6b9d', '#ffd700', '#ff4466', '#ff9ec5', '#ffe44d', '#f472b6', '#c084fc', '#fb923c'];
-    const color = colors[Math.floor(Math.random() * colors.length)];
-    const particleCount = 60 + Math.random() * 40;
+// --- CÁC KIỂU NỔ ---
+function createExplosion(x, y, palette) {
+    const types = ['circle', 'circle', 'heart', 'ring', 'star', 'double', 'willow'];
+    const type = types[Math.floor(Math.random() * types.length)];
 
-    for (let i = 0; i < particleCount; i++) {
-        const angle = (Math.PI * 2 / particleCount) * i;
-        const speed = 2 + Math.random() * 3;
-        fireworkParticles.push(new FireworkParticle(
+    switch (type) {
+        case 'circle': explodeCircle(x, y, palette); break;
+        case 'heart': explodeHeart(x, y, palette); break;
+        case 'ring': explodeRing(x, y, palette); break;
+        case 'star': explodeStar(x, y, palette); break;
+        case 'double': explodeDouble(x, y, palette); break;
+        case 'willow': explodeWillow(x, y, palette); break;
+    }
+}
+
+function explodeCircle(x, y, palette) {
+    const count = 80 + Math.random() * 50;
+    for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 / count) * i;
+        const speed = 2 + Math.random() * 4;
+        const color = palette[Math.floor(Math.random() * palette.length)];
+        explosionParticles.push(new ExplosionParticle(
             x, y, color,
-            { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed },
-            1.5 + Math.random() * 1.5,
-            60 + Math.random() * 40
+            Math.cos(angle) * speed, Math.sin(angle) * speed,
+            1.5 + Math.random() * 2, 60 + Math.random() * 50
         ));
     }
+}
+
+function explodeHeart(x, y, palette) {
+    const count = 100;
+    for (let i = 0; i < count; i++) {
+        const t = (i / count) * Math.PI * 2;
+        const hx = 16 * Math.pow(Math.sin(t), 3);
+        const hy = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+        const speed = 0.22 + Math.random() * 0.08;
+        const color = palette[0];
+        explosionParticles.push(new ExplosionParticle(
+            x, y, color,
+            hx * speed, hy * speed,
+            1.8 + Math.random() * 1.2, 70 + Math.random() * 40
+        ));
+    }
+}
+
+function explodeRing(x, y, palette) {
+    // Vòng ngoài
+    const count = 60;
+    for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 / count) * i;
+        const speed = 4 + Math.random() * 1;
+        explosionParticles.push(new ExplosionParticle(
+            x, y, palette[0],
+            Math.cos(angle) * speed, Math.sin(angle) * speed,
+            2, 55 + Math.random() * 20
+        ));
+    }
+    // Vòng trong
+    for (let i = 0; i < 30; i++) {
+        const angle = (Math.PI * 2 / 30) * i;
+        const speed = 2;
+        explosionParticles.push(new ExplosionParticle(
+            x, y, palette[2] || palette[1],
+            Math.cos(angle) * speed, Math.sin(angle) * speed,
+            1.5, 65 + Math.random() * 20
+        ));
+    }
+}
+
+function explodeStar(x, y, palette) {
+    const points = 5;
+    const count = 80;
+    for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 / count) * i;
+        const starFactor = (i % (count / points) < (count / points / 2)) ? 1 : 0.5;
+        const speed = (3 + Math.random() * 2) * starFactor;
+        const color = palette[Math.floor(Math.random() * palette.length)];
+        explosionParticles.push(new ExplosionParticle(
+            x, y, color,
+            Math.cos(angle) * speed, Math.sin(angle) * speed,
+            1.8 + Math.random() * 1.2, 60 + Math.random() * 40
+        ));
+    }
+}
+
+function explodeDouble(x, y, palette) {
+    explodeCircle(x, y, [palette[0]]);
+    setTimeout(() => {
+        const count = 40;
+        const color = palette[2] || palette[1];
+        for (let i = 0; i < count; i++) {
+            const angle = (Math.PI * 2 / count) * i;
+            const speed = 1.5 + Math.random() * 1;
+            explosionParticles.push(new ExplosionParticle(
+                x, y, color,
+                Math.cos(angle) * speed, Math.sin(angle) * speed,
+                2.5, 80 + Math.random() * 30
+            ));
+        }
+    }, 200);
+}
+
+function explodeWillow(x, y, palette) {
+    const count = 100;
+    for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 / count) * i + (Math.random() - 0.5) * 0.2;
+        const speed = 1.5 + Math.random() * 3;
+        const color = palette[Math.floor(Math.random() * palette.length)];
+        explosionParticles.push(new ExplosionParticle(
+            x, y, color,
+            Math.cos(angle) * speed, Math.sin(angle) * speed,
+            1.2 + Math.random() * 1, 100 + Math.random() * 60
+        ));
+    }
+}
+
+// --- LAUNCH & ANIMATE ---
+function launchFirework() {
+    rockets.push(new Rocket());
 }
 
 function animateFireworks() {
     if (!fireworksRunning) return;
 
     ctx.globalCompositeOperation = 'destination-out';
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.globalCompositeOperation = 'lighter';
 
-    fireworkParticles.forEach(p => {
-        p.update();
-        p.draw();
-    });
+    // Rockets
+    rockets.forEach(r => { r.update(); r.draw(); });
+    rockets = rockets.filter(r => !r.exploded);
 
-    fireworkParticles = fireworkParticles.filter(p => !p.isDead());
+    // Explosion particles
+    explosionParticles.forEach(p => { p.update(); p.draw(); });
+    explosionParticles = explosionParticles.filter(p => !p.isDead());
 
     requestAnimationFrame(animateFireworks);
 }
@@ -188,15 +380,19 @@ function startFireworks() {
     fireworksRunning = true;
     animateFireworks();
 
-    // Bắn pháo hoa định kỳ
+    // Bắn liên tục, tần suất cao
     setInterval(() => {
-        if (Math.random() > 0.3) launchFirework();
-    }, 2000);
+        launchFirework();
+        // 30% cơ hội bắn thêm 1 quả nữa cùng lúc
+        if (Math.random() > 0.7) {
+            setTimeout(() => launchFirework(), 150);
+        }
+    }, 700);
 
-    // Bắn ngay khi mở
-    launchFirework();
-    setTimeout(() => launchFirework(), 500);
-    setTimeout(() => launchFirework(), 1200);
+    // Bắn ngay lập tức khi mở - salvo đầu tiên
+    for (let i = 0; i < 5; i++) {
+        setTimeout(() => launchFirework(), i * 300);
+    }
 }
 
 // ============================================
@@ -269,10 +465,10 @@ function startTyping() {
             html += line[currentChar];
             textElement.innerHTML = html.replace(/\n/g, '<br>') + '<span class="cursor"></span>';
             currentChar++;
-            const delay = line[currentChar - 1] === '.' ? 120 : 
-                          line[currentChar - 1] === ',' ? 80 :
-                          line[currentChar - 1] === '!' ? 100 :
-                          30 + Math.random() * 30;
+            const delay = line[currentChar - 1] === '.' ? 120 :
+                line[currentChar - 1] === ',' ? 80 :
+                    line[currentChar - 1] === '!' ? 100 :
+                        30 + Math.random() * 30;
             setTimeout(typeChar, delay);
         } else {
             html += '\n';
@@ -298,7 +494,7 @@ function openGift() {
     const message = document.querySelector('.gift-message');
 
     box.classList.add('opened');
-    
+
     setTimeout(() => {
         message.classList.add('show');
         spawnConfetti(60);
@@ -471,8 +667,31 @@ function startBackgroundParticles() {
 }
 
 // ============================================
+// 10. STARFIELD - NỀN SAO LẤP LÁNH
+// ============================================
+function initStarfield() {
+    const container = document.getElementById('starfield');
+    if (!container) return;
+    for (let i = 0; i < 60; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        star.style.width = (1 + Math.random() * 2.5) + 'px';
+        star.style.height = star.style.width;
+        star.style.animationDuration = (2 + Math.random() * 4) + 's';
+        star.style.animationDelay = Math.random() * 4 + 's';
+        if (Math.random() > 0.7) {
+            star.style.background = '#ffd700';
+        }
+        container.appendChild(star);
+    }
+}
+
+// ============================================
 // KHỞI TẠO
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
     initWelcome();
+    initStarfield();
 });

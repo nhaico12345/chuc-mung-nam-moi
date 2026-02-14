@@ -26,9 +26,23 @@ html {
 body {
     font-family: 'Quicksand', sans-serif;
     background: linear-gradient(135deg, var(--bg-dark), var(--bg-mid), var(--bg-light));
+    background-size: 400% 400%;
+    animation: bgShift 20s ease infinite;
     color: var(--white);
     overflow-x: hidden;
     min-height: 100vh;
+}
+
+@keyframes bgShift {
+
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
 }
 
 /* ========== FIREWORKS CANVAS ========== */
@@ -57,15 +71,19 @@ body {
         transform: translateY(-10vh) rotate(0deg) translateX(0);
         opacity: 0.9;
     }
+
     25% {
         transform: translateY(22vh) rotate(90deg) translateX(30px);
     }
+
     50% {
         transform: translateY(48vh) rotate(180deg) translateX(-20px);
     }
+
     75% {
         transform: translateY(72vh) rotate(270deg) translateX(25px);
     }
+
     100% {
         transform: translateY(105vh) rotate(360deg) translateX(-10px);
         opacity: 0;
@@ -105,8 +123,15 @@ body {
 }
 
 @keyframes musicPulse {
-    0%, 100% { box-shadow: 0 0 20px rgba(255, 107, 157, 0.3); }
-    50% { box-shadow: 0 0 40px rgba(255, 107, 157, 0.6); }
+
+    0%,
+    100% {
+        box-shadow: 0 0 20px rgba(255, 107, 157, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 40px rgba(255, 107, 157, 0.6);
+    }
 }
 
 /* ========== WELCOME SCREEN ========== */
@@ -121,8 +146,10 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: radial-gradient(ellipse at center, #1a0030 0%, #0a0015 70%);
-    transition: opacity 1s ease, visibility 1s ease;
+    background: radial-gradient(ellipse at 30% 50%, rgba(100, 20, 80, 0.4) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 50%, rgba(60, 20, 120, 0.3) 0%, transparent 50%),
+        radial-gradient(ellipse at center, #1a0030 0%, #0a0015 70%);
+    transition: opacity 1.5s ease, visibility 1.5s ease;
 }
 
 .welcome-screen.hidden {
@@ -146,8 +173,17 @@ body {
 }
 
 @keyframes floatHeart {
-    0%, 100% { transform: translateY(0) scale(1); opacity: 0.15; }
-    50% { transform: translateY(-40px) scale(1.2); opacity: 0.35; }
+
+    0%,
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 0.15;
+    }
+
+    50% {
+        transform: translateY(-40px) scale(1.2);
+        opacity: 0.35;
+    }
 }
 
 .welcome-content {
@@ -157,8 +193,15 @@ body {
 }
 
 @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(40px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .welcome-envelope {
@@ -169,8 +212,15 @@ body {
 }
 
 @keyframes envelopeBounce {
-    0%, 100% { transform: translateY(0) rotate(-5deg); }
-    50% { transform: translateY(-15px) rotate(5deg); }
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(-5deg);
+    }
+
+    50% {
+        transform: translateY(-15px) rotate(5deg);
+    }
 }
 
 .welcome-title {
@@ -223,8 +273,13 @@ body {
 }
 
 @keyframes shimmer {
-    0% { transform: translateX(-100%) rotate(45deg); }
-    100% { transform: translateX(100%) rotate(45deg); }
+    0% {
+        transform: translateX(-100%) rotate(45deg);
+    }
+
+    100% {
+        transform: translateX(100%) rotate(45deg);
+    }
 }
 
 /* ========== MAIN CONTENT ========== */
@@ -240,8 +295,13 @@ body {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 /* ========== SECTION BASE ========== */
@@ -289,19 +349,32 @@ body {
 .countdown-box {
     background: rgba(255, 255, 255, 0.06);
     backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 107, 157, 0.2);
+    border: 1px solid rgba(255, 107, 157, 0.25);
     border-radius: 20px;
     padding: 25px 20px;
     min-width: 120px;
     text-align: center;
     transition: all 0.4s ease;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 0 30px rgba(255, 107, 157, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.countdown-box::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent 40%, rgba(255, 215, 0, 0.05) 50%, transparent 60%);
+    animation: shimmer 4s ease-in-out infinite;
 }
 
 .countdown-box:hover {
-    transform: translateY(-8px);
+    transform: translateY(-8px) scale(1.05);
     border-color: var(--pink);
-    box-shadow: 0 15px 50px rgba(255, 107, 157, 0.2);
+    box-shadow: 0 15px 50px rgba(255, 107, 157, 0.3), 0 0 20px rgba(255, 107, 157, 0.15);
 }
 
 .countdown-number {
@@ -332,8 +405,15 @@ body {
 }
 
 @keyframes scaleIn {
-    from { opacity: 0; transform: scale(0.5); }
-    to { opacity: 1; transform: scale(1); }
+    from {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 .countdown-complete h2 {
@@ -353,12 +433,25 @@ body {
     width: 100%;
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 107, 157, 0.15);
+    border: 1px solid rgba(255, 107, 157, 0.2);
     border-radius: 30px;
     padding: 50px 40px;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(255, 107, 157, 0.08);
+    animation: cardFloat 6s ease-in-out infinite;
+}
+
+@keyframes cardFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
 }
 
 .message-card::before {
@@ -377,9 +470,17 @@ body {
 }
 
 @keyframes borderGlow {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
 }
 
 .message-to {
@@ -424,8 +525,15 @@ body {
 }
 
 @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
 }
 
 .message-signature {
@@ -466,6 +574,20 @@ body {
     perspective: 800px;
     cursor: pointer;
     margin-bottom: 40px;
+    filter: drop-shadow(0 0 25px rgba(232, 62, 108, 0.3));
+    animation: giftPulse 3s ease-in-out infinite;
+}
+
+@keyframes giftPulse {
+
+    0%,
+    100% {
+        filter: drop-shadow(0 0 25px rgba(232, 62, 108, 0.3));
+    }
+
+    50% {
+        filter: drop-shadow(0 0 40px rgba(232, 62, 108, 0.5));
+    }
 }
 
 .gift-box {
@@ -571,11 +693,27 @@ body {
 }
 
 @keyframes heartBeat {
-    0%, 100% { transform: scale(1); }
-    15% { transform: scale(1.1); }
-    30% { transform: scale(1); }
-    45% { transform: scale(1.08); }
-    60% { transform: scale(1); }
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    15% {
+        transform: scale(1.1);
+    }
+
+    30% {
+        transform: scale(1);
+    }
+
+    45% {
+        transform: scale(1.08);
+    }
+
+    60% {
+        transform: scale(1);
+    }
 }
 
 .gift-hearts {
@@ -597,6 +735,7 @@ body {
         opacity: 1;
         transform: translateY(0) rotate(0deg);
     }
+
     100% {
         opacity: 0;
         transform: translateY(100vh) rotate(720deg);
@@ -630,8 +769,15 @@ body {
 }
 
 @keyframes bounce {
-    0%, 100% { transform: translateX(-50%) translateY(0); }
-    50% { transform: translateX(-50%) translateY(12px); }
+
+    0%,
+    100% {
+        transform: translateX(-50%) translateY(0);
+    }
+
+    50% {
+        transform: translateX(-50%) translateY(12px);
+    }
 }
 
 /* ========== PARTICLE BACKGROUND ========== */
@@ -648,11 +794,52 @@ body {
         transform: translateY(100vh) rotate(0deg);
         opacity: 0;
     }
-    10% { opacity: 0.2; }
-    90% { opacity: 0.2; }
+
+    10% {
+        opacity: 0.25;
+    }
+
+    90% {
+        opacity: 0.25;
+    }
+
     100% {
         transform: translateY(-10vh) rotate(360deg);
         opacity: 0;
+    }
+}
+
+/* ========== STARFIELD NỀN ========== */
+.starfield {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: #fff;
+    border-radius: 50%;
+    animation: twinkle ease-in-out infinite;
+}
+
+@keyframes twinkle {
+
+    0%,
+    100% {
+        opacity: 0.2;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.8;
+        transform: scale(1.5);
     }
 }
 
@@ -661,47 +848,60 @@ body {
     .welcome-title {
         font-size: 2.5rem;
     }
+
     .welcome-envelope {
         font-size: 60px;
     }
+
     .countdown-label {
         font-size: 2.2rem;
     }
+
     .countdown-box {
         min-width: 90px;
         padding: 18px 14px;
     }
+
     .countdown-number {
         font-size: 2.5rem;
     }
+
     .message-card {
         padding: 35px 25px;
     }
+
     .message-name {
         font-size: 2.2rem;
     }
+
     .message-text {
         font-size: 1rem;
     }
+
     .gift-message-text {
         font-size: 2.5rem;
     }
+
     .gift-box {
         width: 140px;
         height: 140px;
     }
+
     .gift-box-body {
         width: 140px;
         height: 115px;
     }
+
     .gift-box-lid {
         width: 160px;
         height: 35px;
         left: -10px;
     }
+
     .countdown-complete h2 {
         font-size: 3rem;
     }
+
     .music-btn {
         width: 45px;
         height: 45px;
@@ -715,23 +915,29 @@ body {
     .welcome-title {
         font-size: 2rem;
     }
+
     .countdown-timer {
         gap: 12px;
     }
+
     .countdown-box {
         min-width: 70px;
         padding: 14px 10px;
     }
+
     .countdown-number {
         font-size: 2rem;
     }
+
     .message-card {
         padding: 25px 18px;
         border-radius: 20px;
     }
+
     .message-to {
         font-size: 1.6rem;
     }
+
     .message-name {
         font-size: 1.8rem;
     }
