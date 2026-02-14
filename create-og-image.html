@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Tạo ảnh OG Preview</title>
+    <style>
+        body {
+            background: #1a1a2e;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+        }
+
+        canvas {
+            border: 1px solid #333;
+            margin: 20px 0;
+            max-width: 100%;
+        }
+
+        button {
+            padding: 15px 40px;
+            font-size: 18px;
+            background: #ff6b9d;
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #e0446e;
+        }
+
+        p {
+            color: #aaa;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🖼️ Tạo Ảnh Preview cho Open Graph</h1>
+    <p>Ảnh sẽ hiển thị khi bạn gửi link qua Messenger, Zalo, iMessage</p>
+    <canvas id="og" width="1200" height="630"></canvas>
+    <button onclick="downloadImage()">📥 Tải Ảnh PNG</button>
+    <p>Sau khi tải, đặt tên file là <strong>og-image.png</strong> và để cùng thư mục với index.html</p>
+
+    <script>
+        const canvas = document.getElementById('og');
+        const ctx = canvas.getContext('2d');
+
+        function draw() {
+            // Background gradient
+            const bg = ctx.createLinearGradient(0, 0, 1200, 630);
+            bg.addColorStop(0, '#0a0015');
+            bg.addColorStop(0.5, '#1a0030');
+            bg.addColorStop(1, '#2d1b4e');
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, 1200, 630);
+
+            // Radial glow center
+            const glow = ctx.createRadialGradient(600, 280, 50, 600, 280, 400);
+            glow.addColorStop(0, 'rgba(255, 107, 157, 0.12)');
+            glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = glow;
+            ctx.fillRect(0, 0, 1200, 630);
+
+            // Stars / sparkles
+            const stars = [
+                [100, 80], [250, 150], [400, 60], [550, 120], [700, 50],
+                [850, 100], [1000, 70], [1100, 140], [150, 500], [1050, 520],
+                [300, 550], [900, 560], [180, 300], [1020, 350], [500, 570]
+            ];
+            stars.forEach(([x, y]) => {
+                ctx.beginPath();
+                ctx.arc(x, y, 1.5 + Math.random(), 0, Math.PI * 2);
+                ctx.fillStyle = Math.random() > 0.5 ? 'rgba(255, 215, 0, 0.6)' : 'rgba(255, 255, 255, 0.4)';
+                ctx.fill();
+            });
+
+            // Firework burst - left
+            drawFirework(180, 160, '#ff6b9d', 0.4);
+            // Firework burst - right
+            drawFirework(1020, 180, '#ffd700', 0.35);
+            // Firework burst - center top
+            drawFirework(600, 80, '#c084fc', 0.25);
+
+            // Cherry blossom petals (drawn as small circles)
+            drawPetal(90, 340, 12, 'rgba(255, 182, 193, 0.2)');
+            drawPetal(210, 240, 10, 'rgba(255, 182, 193, 0.15)');
+            drawPetal(960, 290, 11, 'rgba(255, 182, 193, 0.18)');
+            drawPetal(1110, 390, 9, 'rgba(255, 182, 193, 0.2)');
+            drawPetal(60, 490, 8, 'rgba(255, 182, 193, 0.12)');
+            drawPetal(1140, 240, 10, 'rgba(255, 182, 193, 0.15)');
+
+            // Small hearts
+            drawHeart(310, 120, 12, 'rgba(255, 107, 157, 0.2)');
+            drawHeart(890, 100, 10, 'rgba(255, 107, 157, 0.15)');
+            drawHeart(110, 420, 9, 'rgba(255, 107, 157, 0.15)');
+            drawHeart(1070, 470, 11, 'rgba(255, 107, 157, 0.2)');
+
+            // Border
+            ctx.strokeStyle = 'rgba(255, 107, 157, 0.15)';
+            ctx.lineWidth = 1;
+            roundRect(20, 20, 1160, 590, 20);
+            ctx.stroke();
+
+            // Main title - "Chúc Mừng Năm Mới"
+            ctx.save();
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = 'rgba(255, 215, 0, 0.5)';
+            ctx.font = 'italic 68px Georgia, serif';
+            ctx.fillStyle = '#ffd700';
+            ctx.textAlign = 'center';
+            ctx.fillText('Chúc Mừng Năm Mới', 600, 220);
+            ctx.restore();
+
+            // Year subtitle
+            ctx.font = '24px Arial, sans-serif';
+            ctx.fillStyle = '#ff9ec5';
+            ctx.textAlign = 'center';
+            ctx.letterSpacing = '6px';
+            ctx.fillText('✨  TẾT NGUYÊN ĐÁN 2026  ✨', 600, 275);
+
+            // Divider line
+            const divGrad = ctx.createLinearGradient(400, 0, 800, 0);
+            divGrad.addColorStop(0, 'rgba(255, 107, 157, 0)');
+            divGrad.addColorStop(0.5, 'rgba(255, 107, 157, 0.5)');
+            divGrad.addColorStop(1, 'rgba(255, 107, 157, 0)');
+            ctx.strokeStyle = divGrad;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(400, 305);
+            ctx.lineTo(800, 305);
+            ctx.stroke();
+
+            // "Gửi Em Yêu..."
+            ctx.save();
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'rgba(255, 107, 157, 0.4)';
+            ctx.font = 'italic 40px Georgia, serif';
+            ctx.fillStyle = '#ff6b9d';
+            ctx.fillText('Gửi Em Yêu...', 600, 365);
+            ctx.restore();
+
+            // Name
+            ctx.save();
+            ctx.shadowBlur = 25;
+            ctx.shadowColor = 'rgba(255, 215, 0, 0.4)';
+            ctx.font = 'italic 46px Georgia, serif';
+            ctx.fillStyle = '#ffd700';
+            ctx.fillText('Hoàng Thị Anh Thơ', 600, 430);
+            ctx.restore();
+
+            // Hearts row
+            ctx.font = '32px Arial';
+            ctx.fillText('💕  💖  💗  💝  💕', 600, 510);
+
+            // "Mãi Yêu Em"
+            ctx.font = '18px Arial, sans-serif';
+            ctx.fillStyle = 'rgba(255, 158, 197, 0.5)';
+            ctx.fillText('"Mãi Yêu Em"', 600, 575);
+        }
+
+        function drawFirework(cx, cy, color, opacity) {
+            ctx.save();
+            ctx.globalAlpha = opacity;
+            const rays = 8;
+            for (let i = 0; i < rays; i++) {
+                const angle = (Math.PI * 2 / rays) * i;
+                const len = 30 + Math.random() * 20;
+                const ex = cx + Math.cos(angle) * len;
+                const ey = cy + Math.sin(angle) * len;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(ex, ey);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                // Tip circle
+                ctx.beginPath();
+                ctx.arc(ex, ey, 2.5, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        function drawPetal(x, y, size, color) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.fillStyle = color;
+            // 5-petal flower shape
+            for (let i = 0; i < 5; i++) {
+                const angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
+                const px = x + Math.cos(angle) * size;
+                const py = y + Math.sin(angle) * size;
+                ctx.beginPath();
+                ctx.arc(px, py, size * 0.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        function drawHeart(x, y, size, color) {
+            ctx.save();
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(x, y + size / 4);
+            ctx.bezierCurveTo(x, y, x - size / 2, y, x - size / 2, y + size / 4);
+            ctx.bezierCurveTo(x - size / 2, y + size / 2, x, y + size * 0.7, x, y + size);
+            ctx.bezierCurveTo(x, y + size * 0.7, x + size / 2, y + size / 2, x + size / 2, y + size / 4);
+            ctx.bezierCurveTo(x + size / 2, y, x, y, x, y + size / 4);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function roundRect(x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        }
+
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.download = 'og-image.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        draw();
+    </script>
+</body>
+
+</html>
