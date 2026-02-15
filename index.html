@@ -37,27 +37,42 @@
     <!-- Nền sao lấp lánh -->
     <div class="starfield" id="starfield"></div>
 
+    <!-- Particle Text Overlay -->
+    <div id="particle-text-overlay">
+        <canvas id="particle-text-canvas"></canvas>
+    </div>
+
+    <!-- Video Giao Thừa Overlay -->
+    <div id="video-overlay">
+        <video id="celebration-video" playsinline>
+            <source src="video.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <!-- Nhạc nền MP3 -->
+    <audio id="bg-music" loop preload="auto">
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+
     <!-- Nút nhạc -->
     <button class="music-btn" onclick="toggleMusic()" title="Bật/Tắt nhạc">🔇</button>
 
-    <!-- ==================== MÀN HÌNH CHÀO ==================== -->
-    <div class="welcome-screen">
+    <!-- ========== WELCOME SCREEN ========== -->
+    <div class="welcome-screen" id="welcome">
         <div class="welcome-hearts"></div>
         <div class="welcome-content">
             <div class="welcome-envelope">💌</div>
             <h1 class="welcome-title">Gửi Em Yêu...</h1>
             <p class="welcome-subtitle">Anh có một điều muốn nói với Em</p>
-            <button class="open-btn" onclick="openLetter()">
-                💝 Mở Thư Tình
-            </button>
+            <button class="open-btn" onclick="openLetter()">💕 Mở Thư Tình 💕</button>
         </div>
     </div>
 
-    <!-- ==================== NỘI DUNG CHÍNH ==================== -->
-    <div class="main-content">
+    <!-- ========== MAIN CONTENT ========== -->
+    <div class="main-content" id="main-content">
 
-        <!-- SECTION 1: COUNTDOWN -->
-        <section class="section countdown-section">
+        <!-- Countdown Section -->
+        <section class="section countdown-section" id="countdown-section">
             <h2 class="countdown-label">Đếm Ngược Giao Thừa</h2>
             <p class="countdown-year">✨ Tết Nguyên Đán 2026 ✨</p>
 
@@ -81,31 +96,31 @@
             </div>
 
             <div class="countdown-complete">
-                <h2>🎆 Chúc Mừng Năm Mới! 🎆</h2>
+                <h2>🎉 Chúc Mừng Năm Mới! 🎉</h2>
             </div>
 
             <div class="scroll-indicator">
                 <span>Cuộn xuống</span>
-                <span class="scroll-arrow">▼</span>
+                <div class="scroll-arrow">↓</div>
             </div>
         </section>
 
-        <!-- SECTION 2: LỜI CHÚC -->
-        <section class="section message-section">
+        <!-- Message Section -->
+        <section class="section message-section" id="message-section">
             <div class="message-card">
                 <div class="message-to">Gửi đến</div>
                 <div class="message-name">Hoàng Thị Anh Thơ</div>
                 <div class="message-divider"></div>
                 <div class="message-text"></div>
                 <div class="message-signature">
-                    - Với tất cả tình yêu của Anh 💕 -
+                    ~ Người Yêu Em Mãi 💕
                 </div>
             </div>
         </section>
 
-        <!-- SECTION 3: HỘP QUÀ -->
-        <section class="section gift-section">
-            <h2 class="gift-title">Anh có một món quà cho Em</h2>
+        <!-- Gift Section -->
+        <section class="section gift-section" id="gift-section">
+            <h2 class="gift-title">Một Món Quà Nhỏ</h2>
             <p class="gift-subtitle">Nhấn vào hộp quà để mở nhé 🎁</p>
 
             <div class="gift-box-wrapper" onclick="openGift()">
@@ -116,7 +131,7 @@
             </div>
 
             <div class="gift-message">
-                <div class="gift-message-text">Mãi Yêu Em</div>
+                <div class="gift-message-text">Mãi Yêu Em 💕</div>
                 <div class="gift-hearts">💕 💖 💗 💝 💕</div>
             </div>
         </section>

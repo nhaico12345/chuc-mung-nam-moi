@@ -1,28 +1,48 @@
 // ============================================
-// TRANG WEB CHÚC MỪNG NĂM MỚI - CHO ANH THƠ
+// TRANG WEB CHÚC MỪNG NĂM MỚI - V2 NÂNG CẤP
+// Tối ưu hiệu năng + Tính năng mới
 // ============================================
 
-// ---- Cấu hình ----
+// ---- PHÁT HIỆN THIẾT BỊ ----
+const IS_MOBILE = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || window.innerWidth <= 768;
+
+// ---- CẤU HÌNH HIỆU NĂNG ----
+const PERF = {
+    fireworkInterval: IS_MOBILE ? 2000 : 700,
+    fireworkParticles: IS_MOBILE ? 30 : 80,
+    petalInterval: IS_MOBILE ? 4000 : 1200,
+    maxPetals: IS_MOBILE ? 4 : 15,
+    maxBgParticles: IS_MOBILE ? 3 : 10,
+    bgParticleInterval: IS_MOBILE ? 8000 : 3000,
+    maxCursorTrail: IS_MOBILE ? 8 : 20,
+    lanternInterval: IS_MOBILE ? 10000 : 5000,
+    maxLanterns: IS_MOBILE ? 2 : 5,
+    starCount: IS_MOBILE ? 20 : 60,
+    particleTextCount: IS_MOBILE ? 200 : 600,
+};
+
+// ---- CẤU HÌNH NỘI DUNG ----
 const NEW_YEAR_DATE = new Date('2026-02-18T00:00:00+07:00');
 const LOVER_NAME = 'Hoàng Thị Anh Thơ';
 const MESSAGE_TEXT = 'Chúc mừng năm mới, Cô Gái nhỏ của anh..!\n\nChúc cho chúng ta năm mới luôn ngập tràn yêu thương, bình yên và những kỉ niệm đẹp mãi không quên.\n\nChúng ta có được nhau là duyên trời, hãy trân trọng tình yêu này mãi Em nhé!\n\nChúc mừng năm mới, tình yêu của đời Anh.\n\nChúc Em mạnh khỏe bình an và luôn nở nụ cười như những năm mới nữa Em yêu nhé..!\n\n"Mãi Yêu Em" 💕';
+
+// Thêm class cho body nếu mobile
+if (IS_MOBILE) document.documentElement.classList.add('mobile');
 
 // ============================================
 // 1. WELCOME SCREEN
 // ============================================
 function initWelcome() {
     const heartsContainer = document.querySelector('.welcome-hearts');
-    const heartSymbols = ['💕', '💖', '💗', '✨', '🌸', '💝'];
+    if (!heartsContainer) return;
+    const symbols = ['💕', '💖', '💗', '✨', '🌸', '💝'];
+    const count = IS_MOBILE ? 12 : 25;
 
-    for (let i = 0; i < 25; i++) {
+    for (let i = 0; i < count; i++) {
         const heart = document.createElement('span');
         heart.className = 'welcome-heart';
-        heart.textContent = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
-        heart.style.left = Math.random() * 100 + '%';
-        heart.style.top = Math.random() * 100 + '%';
-        heart.style.animationDelay = Math.random() * 6 + 's';
-        heart.style.animationDuration = (4 + Math.random() * 4) + 's';
-        heart.style.fontSize = (16 + Math.random() * 20) + 'px';
+        heart.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+        heart.style.cssText = `left:${Math.random() * 100}%;top:${Math.random() * 100}%;animation-delay:${Math.random() * 6}s;animation-duration:${4 + Math.random() * 4}s;font-size:${16 + Math.random() * 20}px`;
         heartsContainer.appendChild(heart);
     }
 }
@@ -30,23 +50,43 @@ function initWelcome() {
 function openLetter() {
     const welcome = document.querySelector('.welcome-screen');
     const main = document.querySelector('.main-content');
+    const ptOverlay = document.getElementById('particle-text-overlay');
 
     welcome.classList.add('hidden');
-    main.classList.add('visible');
 
-    setTimeout(() => {
-        startCountdown();
-        startPetals();
-        startFireworks();
-        startBackgroundParticles();
-        initTypingOnScroll();
-    }, 500);
+    // Hiện particle text trước
+    if (ptOverlay) {
+        ptOverlay.classList.add('active');
+        startParticleText();
+        setTimeout(() => {
+            ptOverlay.classList.remove('active');
+            main.classList.add('visible');
+            startEverything();
+        }, 5500);
+    } else {
+        main.classList.add('visible');
+        startEverything();
+    }
+}
+
+function startEverything() {
+    startCountdown();
+    startPetals();
+    startFireworks();
+    startBackgroundParticles();
+    startLanterns();
+    startCursorTrail();
+    initParallax();
+    initShakeDetection();
+    startAutoPlay();
+    tryPlayMusic();
 }
 
 // ============================================
-// 2. COUNTDOWN - ĐẾM NGƯỢC ĐẾN GIAO THỪA
+// 2. COUNTDOWN
 // ============================================
 let countdownInterval;
+let isNewYear = false;
 
 function startCountdown() {
     updateCountdown();
@@ -57,635 +97,701 @@ function updateCountdown() {
     const now = new Date();
     const diff = NEW_YEAR_DATE - now;
 
-    if (diff <= 0) {
-        // Đã đến giao thừa!
+    if (diff <= 0 && !isNewYear) {
+        isNewYear = true;
         clearInterval(countdownInterval);
-        document.querySelector('.countdown-timer').style.display = 'none';
-        document.querySelector('.countdown-year').style.display = 'none';
+        const timer = document.querySelector('.countdown-timer');
+        const year = document.querySelector('.countdown-year');
         const complete = document.querySelector('.countdown-complete');
-        complete.classList.add('show');
-        triggerCelebration();
+        if (timer) timer.style.display = 'none';
+        if (year) year.style.display = 'none';
+        if (complete) complete.classList.add('show');
+        triggerGiaoThua();
         return;
     }
+    if (diff <= 0) return;
 
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
 
-    document.getElementById('days').textContent = String(days).padStart(2, '0');
-    document.getElementById('hours').textContent = String(hours).padStart(2, '0');
-    document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
-    document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+    setText('days', String(d).padStart(2, '0'));
+    setText('hours', String(h).padStart(2, '0'));
+    setText('minutes', String(m).padStart(2, '0'));
+    setText('seconds', String(s).padStart(2, '0'));
 }
 
-function triggerCelebration() {
-    // Bắn pháo hoa liên tục khi giao thừa
-    for (let i = 0; i < 10; i++) {
-        setTimeout(() => launchFirework(), i * 300);
-    }
-    spawnConfetti(80);
+function setText(id, text) {
+    const el = document.getElementById(id);
+    if (el && el.textContent !== text) el.textContent = text;
 }
 
 // ============================================
-// 3. PHÁO HOA NÂNG CAO - ADVANCED FIREWORKS
+// 3. GIAO THỪA - VIDEO + CELEBRATION
+// ============================================
+let hasVideo = false;
+
+function checkVideo() {
+    const video = document.getElementById('celebration-video');
+    if (!video) return;
+    const source = video.querySelector('source') || video;
+    if (source.src || source.getAttribute('src')) {
+        video.addEventListener('canplay', () => { hasVideo = true; }, { once: true });
+        video.addEventListener('error', () => { hasVideo = false; });
+        video.load();
+    }
+}
+
+function triggerGiaoThua() {
+    // Bắn pháo hoa dữ dội
+    for (let i = 0; i < 8; i++) {
+        setTimeout(() => launchFirework(), i * 250);
+    }
+    spawnConfetti(50);
+
+    if (hasVideo) {
+        playVideo();
+    }
+}
+
+function playVideo() {
+    const overlay = document.getElementById('video-overlay');
+    const video = document.getElementById('celebration-video');
+    if (!overlay || !video) return;
+
+    overlay.classList.add('active');
+    video.play().catch(() => {
+        overlay.classList.remove('active');
+    });
+
+    video.addEventListener('ended', () => {
+        overlay.classList.remove('active');
+    }, { once: true });
+}
+
+// ============================================
+// 4. PHÁO HOA NÂNG CAO (Canvas 2D)
 // ============================================
 const canvas = document.getElementById('fireworks-canvas');
-const ctx = canvas.getContext('2d');
+const ctx = canvas ? canvas.getContext('2d') : null;
 let rockets = [];
 let explosionParticles = [];
 let fireworksRunning = false;
 
 function resizeCanvas() {
+    if (!canvas) return;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 }
 
-window.addEventListener('resize', resizeCanvas);
+window.addEventListener('resize', resizeCanvas, { passive: true });
 resizeCanvas();
 
-// Màu sắc đa dạng
-const FIREWORK_PALETTES = [
-    ['#ff6b9d', '#ff9ec5', '#ffb6d3'],  // Hồng
-    ['#ffd700', '#ffe44d', '#fff176'],  // Vàng
-    ['#c084fc', '#d8b4fe', '#e9d5ff'],  // Tím
-    ['#fb923c', '#fdba74', '#fed7aa'],  // Cam
-    ['#f472b6', '#f9a8d4', '#fbcfe8'],  // Hồng nhạt
-    ['#34d399', '#6ee7b7', '#a7f3d0'],  // Xanh mint
-    ['#ff4466', '#ff6b81', '#ff8fa3'],  // Đỏ
-    ['#60a5fa', '#93c5fd', '#bfdbfe'],  // Xanh dương
-    ['#fbbf24', '#fcd34d', '#fde68a'],  // Vàng ấm
+const PALETTES = [
+    ['#ff6b9d', '#ff9ec5', '#ffb6d3'],
+    ['#ffd700', '#ffe44d', '#fff176'],
+    ['#c084fc', '#d8b4fe', '#e9d5ff'],
+    ['#fb923c', '#fdba74', '#fed7aa'],
+    ['#f472b6', '#f9a8d4', '#fbcfe8'],
+    ['#ff4466', '#ff6b81', '#ff8fa3'],
+    ['#60a5fa', '#93c5fd', '#bfdbfe'],
+    ['#34d399', '#6ee7b7', '#a7f3d0'],
 ];
 
-// --- ROCKET (Tên lửa bay lên) ---
 class Rocket {
     constructor() {
         this.x = Math.random() * canvas.width * 0.8 + canvas.width * 0.1;
-        this.y = canvas.height + 10;
+        this.y = canvas.height + 5;
         this.targetY = Math.random() * canvas.height * 0.35 + canvas.height * 0.08;
         this.speed = 4 + Math.random() * 3;
-        this.trail = [];
-        this.palette = FIREWORK_PALETTES[Math.floor(Math.random() * FIREWORK_PALETTES.length)];
+        this.palette = PALETTES[Math.floor(Math.random() * PALETTES.length)];
         this.color = this.palette[0];
         this.exploded = false;
         this.angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.3;
         this.vx = Math.cos(this.angle) * this.speed;
         this.vy = Math.sin(this.angle) * this.speed;
+        this.trail = [];
     }
-
     update() {
-        this.trail.push({ x: this.x, y: this.y, alpha: 1 });
-        if (this.trail.length > 12) this.trail.shift();
-        this.trail.forEach(t => t.alpha -= 0.08);
-
+        this.trail.push({ x: this.x, y: this.y, a: 1 });
+        if (this.trail.length > 8) this.trail.shift();
         this.x += this.vx;
         this.y += this.vy;
-        this.vy += 0.02; // Nhẹ gravity
-
+        this.vy += 0.02;
         if (this.y <= this.targetY) {
             this.exploded = true;
             createExplosion(this.x, this.y, this.palette);
         }
     }
-
     draw() {
-        // Vệt trail
-        this.trail.forEach(t => {
-            if (t.alpha <= 0) return;
-            ctx.save();
-            ctx.globalAlpha = t.alpha * 0.6;
-            ctx.beginPath();
-            ctx.arc(t.x, t.y, 2, 0, Math.PI * 2);
+        for (let i = 0; i < this.trail.length; i++) {
+            const t = this.trail[i];
+            const a = (i / this.trail.length) * 0.5;
+            ctx.globalAlpha = a;
             ctx.fillStyle = this.color;
-            ctx.shadowBlur = 8;
-            ctx.shadowColor = this.color;
-            ctx.fill();
-            ctx.restore();
-        });
-
-        // Đầu rocket
-        ctx.save();
+            ctx.fillRect(t.x - 1, t.y - 1, 2, 2);
+        }
+        ctx.globalAlpha = 1;
         ctx.beginPath();
-        ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+        ctx.arc(this.x, this.y, 2.5, 0, Math.PI * 2);
         ctx.fillStyle = '#fff';
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = this.color;
         ctx.fill();
-        ctx.restore();
     }
 }
 
-// --- PARTICLE NỔ ---
-class ExplosionParticle {
+class Particle {
     constructor(x, y, color, vx, vy, size, life) {
-        this.x = x;
-        this.y = y;
-        this.color = color;
-        this.vx = vx;
-        this.vy = vy;
-        this.size = size;
-        this.life = life;
-        this.maxLife = life;
-        this.gravity = 0.03;
-        this.friction = 0.975;
-        this.trail = [];
+        this.x = x; this.y = y; this.color = color;
+        this.vx = vx; this.vy = vy;
+        this.size = size; this.life = life; this.maxLife = life;
     }
-
     update() {
-        this.trail.push({ x: this.x, y: this.y, alpha: this.life / this.maxLife });
-        if (this.trail.length > 5) this.trail.shift();
-        this.trail.forEach(t => t.alpha -= 0.15);
-
-        this.vx *= this.friction;
-        this.vy *= this.friction;
-        this.vy += this.gravity;
+        this.vx *= 0.975;
+        this.vy *= 0.975;
+        this.vy += 0.03;
         this.x += this.vx;
         this.y += this.vy;
         this.life--;
     }
-
     draw() {
-        const alpha = this.life / this.maxLife;
-
-        // Vệt trail
-        this.trail.forEach(t => {
-            if (t.alpha <= 0) return;
-            ctx.save();
-            ctx.globalAlpha = t.alpha * 0.3;
-            ctx.beginPath();
-            ctx.arc(t.x, t.y, this.size * 0.5, 0, Math.PI * 2);
-            ctx.fillStyle = this.color;
-            ctx.fill();
-            ctx.restore();
-        });
-
-        // Hạt chính
-        ctx.save();
-        ctx.globalAlpha = alpha;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size * (0.3 + alpha * 0.7), 0, Math.PI * 2);
+        const a = this.life / this.maxLife;
+        ctx.globalAlpha = a;
         ctx.fillStyle = this.color;
-        ctx.shadowBlur = 12;
-        ctx.shadowColor = this.color;
-        ctx.fill();
-        ctx.restore();
+        ctx.fillRect(this.x - this.size * a, this.y - this.size * a, this.size * 2 * a, this.size * 2 * a);
     }
-
-    isDead() {
-        return this.life <= 0;
-    }
+    isDead() { return this.life <= 0; }
 }
 
-// --- CÁC KIỂU NỔ ---
 function createExplosion(x, y, palette) {
-    const types = ['circle', 'circle', 'heart', 'ring', 'star', 'double', 'willow'];
+    const types = ['circle', 'circle', 'heart', 'ring', 'star', 'willow'];
     const type = types[Math.floor(Math.random() * types.length)];
+    const count = PERF.fireworkParticles;
+    const color = () => palette[Math.floor(Math.random() * palette.length)];
 
-    switch (type) {
-        case 'circle': explodeCircle(x, y, palette); break;
-        case 'heart': explodeHeart(x, y, palette); break;
-        case 'ring': explodeRing(x, y, palette); break;
-        case 'star': explodeStar(x, y, palette); break;
-        case 'double': explodeDouble(x, y, palette); break;
-        case 'willow': explodeWillow(x, y, palette); break;
-    }
-}
-
-function explodeCircle(x, y, palette) {
-    const count = 80 + Math.random() * 50;
-    for (let i = 0; i < count; i++) {
-        const angle = (Math.PI * 2 / count) * i;
-        const speed = 2 + Math.random() * 4;
-        const color = palette[Math.floor(Math.random() * palette.length)];
-        explosionParticles.push(new ExplosionParticle(
-            x, y, color,
-            Math.cos(angle) * speed, Math.sin(angle) * speed,
-            1.5 + Math.random() * 2, 60 + Math.random() * 50
-        ));
-    }
-}
-
-function explodeHeart(x, y, palette) {
-    const count = 100;
-    for (let i = 0; i < count; i++) {
-        const t = (i / count) * Math.PI * 2;
-        const hx = 16 * Math.pow(Math.sin(t), 3);
-        const hy = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
-        const speed = 0.22 + Math.random() * 0.08;
-        const color = palette[0];
-        explosionParticles.push(new ExplosionParticle(
-            x, y, color,
-            hx * speed, hy * speed,
-            1.8 + Math.random() * 1.2, 70 + Math.random() * 40
-        ));
-    }
-}
-
-function explodeRing(x, y, palette) {
-    // Vòng ngoài
-    const count = 60;
-    for (let i = 0; i < count; i++) {
-        const angle = (Math.PI * 2 / count) * i;
-        const speed = 4 + Math.random() * 1;
-        explosionParticles.push(new ExplosionParticle(
-            x, y, palette[0],
-            Math.cos(angle) * speed, Math.sin(angle) * speed,
-            2, 55 + Math.random() * 20
-        ));
-    }
-    // Vòng trong
-    for (let i = 0; i < 30; i++) {
-        const angle = (Math.PI * 2 / 30) * i;
-        const speed = 2;
-        explosionParticles.push(new ExplosionParticle(
-            x, y, palette[2] || palette[1],
-            Math.cos(angle) * speed, Math.sin(angle) * speed,
-            1.5, 65 + Math.random() * 20
-        ));
-    }
-}
-
-function explodeStar(x, y, palette) {
-    const points = 5;
-    const count = 80;
-    for (let i = 0; i < count; i++) {
-        const angle = (Math.PI * 2 / count) * i;
-        const starFactor = (i % (count / points) < (count / points / 2)) ? 1 : 0.5;
-        const speed = (3 + Math.random() * 2) * starFactor;
-        const color = palette[Math.floor(Math.random() * palette.length)];
-        explosionParticles.push(new ExplosionParticle(
-            x, y, color,
-            Math.cos(angle) * speed, Math.sin(angle) * speed,
-            1.8 + Math.random() * 1.2, 60 + Math.random() * 40
-        ));
-    }
-}
-
-function explodeDouble(x, y, palette) {
-    explodeCircle(x, y, [palette[0]]);
-    setTimeout(() => {
-        const count = 40;
-        const color = palette[2] || palette[1];
+    if (type === 'heart') {
+        for (let i = 0; i < count; i++) {
+            const t = (i / count) * Math.PI * 2;
+            const hx = 16 * Math.pow(Math.sin(t), 3);
+            const hy = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+            const sp = 0.2 + Math.random() * 0.08;
+            explosionParticles.push(new Particle(x, y, palette[0], hx * sp, hy * sp, 1.5 + Math.random(), 65 + Math.random() * 35));
+        }
+    } else if (type === 'ring') {
         for (let i = 0; i < count; i++) {
             const angle = (Math.PI * 2 / count) * i;
-            const speed = 1.5 + Math.random() * 1;
-            explosionParticles.push(new ExplosionParticle(
-                x, y, color,
-                Math.cos(angle) * speed, Math.sin(angle) * speed,
-                2.5, 80 + Math.random() * 30
-            ));
+            const speed = 3.5 + Math.random() * 0.5;
+            explosionParticles.push(new Particle(x, y, color(), Math.cos(angle) * speed, Math.sin(angle) * speed, 1.8, 50 + Math.random() * 20));
         }
-    }, 200);
-}
-
-function explodeWillow(x, y, palette) {
-    const count = 100;
-    for (let i = 0; i < count; i++) {
-        const angle = (Math.PI * 2 / count) * i + (Math.random() - 0.5) * 0.2;
-        const speed = 1.5 + Math.random() * 3;
-        const color = palette[Math.floor(Math.random() * palette.length)];
-        explosionParticles.push(new ExplosionParticle(
-            x, y, color,
-            Math.cos(angle) * speed, Math.sin(angle) * speed,
-            1.2 + Math.random() * 1, 100 + Math.random() * 60
-        ));
+        for (let i = 0; i < count / 2; i++) {
+            const angle = (Math.PI * 2 / (count / 2)) * i;
+            explosionParticles.push(new Particle(x, y, palette[2] || palette[1], Math.cos(angle) * 1.8, Math.sin(angle) * 1.8, 1.3, 60 + Math.random() * 20));
+        }
+    } else if (type === 'star') {
+        for (let i = 0; i < count; i++) {
+            const angle = (Math.PI * 2 / count) * i;
+            const starF = (i % (count / 5) < (count / 10)) ? 1 : 0.4;
+            const speed = (3 + Math.random() * 2) * starF;
+            explosionParticles.push(new Particle(x, y, color(), Math.cos(angle) * speed, Math.sin(angle) * speed, 1.5 + Math.random(), 55 + Math.random() * 35));
+        }
+    } else if (type === 'willow') {
+        for (let i = 0; i < count; i++) {
+            const angle = (Math.PI * 2 / count) * i + (Math.random() - 0.5) * 0.2;
+            const speed = 1.2 + Math.random() * 2.5;
+            explosionParticles.push(new Particle(x, y, color(), Math.cos(angle) * speed, Math.sin(angle) * speed, 1 + Math.random(), 90 + Math.random() * 50));
+        }
+    } else {
+        for (let i = 0; i < count; i++) {
+            const angle = (Math.PI * 2 / count) * i;
+            const speed = 2 + Math.random() * 3.5;
+            explosionParticles.push(new Particle(x, y, color(), Math.cos(angle) * speed, Math.sin(angle) * speed, 1.3 + Math.random() * 1.5, 55 + Math.random() * 40));
+        }
     }
 }
 
-// --- LAUNCH & ANIMATE ---
 function launchFirework() {
+    if (!canvas) return;
     rockets.push(new Rocket());
 }
 
 function animateFireworks() {
-    if (!fireworksRunning) return;
-
+    if (!fireworksRunning || !ctx) return;
     ctx.globalCompositeOperation = 'destination-out';
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.globalCompositeOperation = 'lighter';
 
-    // Rockets
-    rockets.forEach(r => { r.update(); r.draw(); });
+    for (const r of rockets) { r.update(); r.draw(); }
     rockets = rockets.filter(r => !r.exploded);
 
-    // Explosion particles
-    explosionParticles.forEach(p => { p.update(); p.draw(); });
+    for (const p of explosionParticles) { p.update(); p.draw(); }
     explosionParticles = explosionParticles.filter(p => !p.isDead());
 
+    ctx.globalAlpha = 1;
     requestAnimationFrame(animateFireworks);
 }
 
 function startFireworks() {
     fireworksRunning = true;
     animateFireworks();
-
-    // Bắn liên tục, tần suất cao
     setInterval(() => {
         launchFirework();
-        // 30% cơ hội bắn thêm 1 quả nữa cùng lúc
-        if (Math.random() > 0.7) {
-            setTimeout(() => launchFirework(), 150);
-        }
-    }, 700);
-
-    // Bắn ngay lập tức khi mở - salvo đầu tiên
-    for (let i = 0; i < 5; i++) {
-        setTimeout(() => launchFirework(), i * 300);
-    }
+        if (!IS_MOBILE && Math.random() > 0.6) setTimeout(launchFirework, 150);
+    }, PERF.fireworkInterval);
+    for (let i = 0; i < (IS_MOBILE ? 2 : 5); i++) setTimeout(launchFirework, i * 300);
 }
 
 // ============================================
-// 4. HOA ĐÀO RƠI - FALLING PETALS
+// 5. HOA ĐÀO RƠI
 // ============================================
-const petalSymbols = ['🌸', '🏵️', '💮', '✿', '❀'];
+let petalCount = 0;
+const petalSymbols = ['🌸', '🏵️', '💮'];
 
 function createPetal() {
+    if (petalCount >= PERF.maxPetals) return;
+    petalCount++;
     const petal = document.createElement('span');
     petal.className = 'petal';
     petal.textContent = petalSymbols[Math.floor(Math.random() * petalSymbols.length)];
-    petal.style.left = Math.random() * 100 + '%';
-    petal.style.fontSize = (14 + Math.random() * 16) + 'px';
-    const duration = 8 + Math.random() * 8;
-    petal.style.animationDuration = duration + 's';
-    petal.style.animationDelay = Math.random() * 2 + 's';
+    const duration = 8 + Math.random() * 6;
+    petal.style.cssText = `left:${Math.random() * 100}%;font-size:${14 + Math.random() * 12}px;animation-duration:${duration}s`;
     document.body.appendChild(petal);
-
-    setTimeout(() => petal.remove(), (duration + 2) * 1000);
+    setTimeout(() => { petal.remove(); petalCount--; }, duration * 1000);
 }
 
 function startPetals() {
-    // Tạo hoa đào ban đầu
-    for (let i = 0; i < 8; i++) {
-        setTimeout(() => createPetal(), i * 400);
-    }
-    // Rơi liên tục
-    setInterval(createPetal, 1200);
+    for (let i = 0; i < (IS_MOBILE ? 2 : 5); i++) setTimeout(createPetal, i * 500);
+    setInterval(createPetal, PERF.petalInterval);
 }
 
 // ============================================
-// 5. TYPING EFFECT - GÕ CHỮ LỜI CHÚC
+// 6. TYPING EFFECT
 // ============================================
 let typingStarted = false;
-
-function initTypingOnScroll() {
-    const messageSection = document.querySelector('.message-section');
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting && !typingStarted) {
-                typingStarted = true;
-                startTyping();
-            }
-        });
-    }, { threshold: 0.3 });
-
-    observer.observe(messageSection);
-}
+let typingDone = false;
 
 function startTyping() {
-    const textElement = document.querySelector('.message-text');
-    const signatureElement = document.querySelector('.message-signature');
-    const lines = MESSAGE_TEXT.split('\n');
-    let currentLine = 0;
-    let currentChar = 0;
+    if (typingStarted) return;
+    typingStarted = true;
+
+    const textEl = document.querySelector('.message-text');
+    const sigEl = document.querySelector('.message-signature');
+    if (!textEl) return;
+
+    const chars = MESSAGE_TEXT.split('');
+    let idx = 0;
     let html = '';
 
-    textElement.innerHTML = '<span class="cursor"></span>';
+    textEl.innerHTML = '<span class="cursor"></span>';
 
-    function typeChar() {
-        if (currentLine >= lines.length) {
-            // Xong rồi, hiện chữ ký
-            textElement.innerHTML = html;
-            signatureElement.classList.add('show');
+    function typeNext() {
+        if (idx >= chars.length) {
+            textEl.innerHTML = html.replace(/\n/g, '<br>');
+            if (sigEl) sigEl.classList.add('show');
+            typingDone = true;
             return;
         }
-
-        const line = lines[currentLine];
-        if (currentChar < line.length) {
-            html += line[currentChar];
-            textElement.innerHTML = html.replace(/\n/g, '<br>') + '<span class="cursor"></span>';
-            currentChar++;
-            const delay = line[currentChar - 1] === '.' ? 120 :
-                line[currentChar - 1] === ',' ? 80 :
-                    line[currentChar - 1] === '!' ? 100 :
-                        30 + Math.random() * 30;
-            setTimeout(typeChar, delay);
-        } else {
-            html += '\n';
-            currentLine++;
-            currentChar = 0;
-            setTimeout(typeChar, currentLine > 0 && lines[currentLine - 1] === '' ? 100 : 300);
-        }
+        const ch = chars[idx];
+        html += ch;
+        textEl.innerHTML = html.replace(/\n/g, '<br>') + '<span class="cursor"></span>';
+        idx++;
+        const delay = ch === '.' ? 100 : ch === ',' ? 70 : ch === '!' ? 80 : ch === '\n' ? 200 : 25 + Math.random() * 25;
+        setTimeout(typeNext, delay);
     }
-
-    setTimeout(typeChar, 800);
+    setTimeout(typeNext, 500);
 }
 
 // ============================================
-// 6. HỘP QUÀ - GIFT BOX
+// 7. HỘP QUÀ
 // ============================================
 let giftOpened = false;
 
 function openGift() {
     if (giftOpened) return;
     giftOpened = true;
-
     const box = document.querySelector('.gift-box');
-    const message = document.querySelector('.gift-message');
-
-    box.classList.add('opened');
-
+    const msg = document.querySelector('.gift-message');
+    if (box) box.classList.add('opened');
     setTimeout(() => {
-        message.classList.add('show');
-        spawnConfetti(60);
-        // Bắn pháo hoa mừng
-        for (let i = 0; i < 5; i++) {
-            setTimeout(() => launchFirework(), i * 400);
-        }
+        if (msg) msg.classList.add('show');
+        spawnConfetti(IS_MOBILE ? 25 : 50);
+        for (let i = 0; i < 4; i++) setTimeout(launchFirework, i * 400);
     }, 600);
 }
 
 // ============================================
-// 7. CONFETTI
+// 8. CONFETTI
 // ============================================
 function spawnConfetti(count) {
-    const colors = ['#ff6b9d', '#ffd700', '#ff4466', '#ff9ec5', '#c084fc', '#fb923c', '#34d399'];
-    const shapes = ['❤️', '✨', '🌟', '⭐', '💫', '🎊', '🎉'];
-
+    const shapes = ['❤️', '✨', '🌟', '⭐', '🎊', '🎉'];
     for (let i = 0; i < count; i++) {
         setTimeout(() => {
-            const piece = document.createElement('span');
-            piece.className = 'confetti-piece';
-            piece.textContent = shapes[Math.floor(Math.random() * shapes.length)];
-            piece.style.left = Math.random() * 100 + '%';
-            piece.style.top = '-5%';
-            piece.style.fontSize = (12 + Math.random() * 18) + 'px';
-            const duration = 2 + Math.random() * 3;
-            piece.style.animationDuration = duration + 's';
-            document.body.appendChild(piece);
-
-            setTimeout(() => piece.remove(), duration * 1000);
-        }, i * 50);
+            const el = document.createElement('span');
+            el.className = 'confetti-piece';
+            el.textContent = shapes[Math.floor(Math.random() * shapes.length)];
+            const dur = 2 + Math.random() * 3;
+            el.style.cssText = `left:${Math.random() * 100}%;top:-5%;font-size:${12 + Math.random() * 14}px;animation-duration:${dur}s`;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), dur * 1000);
+        }, i * 60);
     }
 }
 
 // ============================================
-// 8. NHẠC NỀN - WEB AUDIO API
+// 9. NHẠC NỀN (MP3 + fallback Web Audio)
 // ============================================
-let audioCtx = null;
 let musicPlaying = false;
+let audioElement = null;
+let audioCtx = null;
 let musicTimers = [];
 
-function createMelody() {
-    if (audioCtx) {
-        audioCtx.close();
-    }
-
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-    // Nốt nhạc "Xuân" pentatonic scale - melody nhẹ nhàng lãng mạn
-    const notes = [
-        // Phrase 1
-        { freq: 523.25, start: 0, dur: 0.5 },    // C5
-        { freq: 587.33, start: 0.5, dur: 0.5 },   // D5
-        { freq: 659.25, start: 1.0, dur: 0.8 },   // E5
-        { freq: 523.25, start: 1.8, dur: 0.4 },   // C5
-        { freq: 659.25, start: 2.2, dur: 0.6 },   // E5
-        { freq: 783.99, start: 2.8, dur: 1.0 },   // G5
-
-        // Phrase 2
-        { freq: 783.99, start: 4.0, dur: 0.5 },   // G5
-        { freq: 698.46, start: 4.5, dur: 0.5 },   // F5
-        { freq: 659.25, start: 5.0, dur: 0.5 },   // E5
-        { freq: 587.33, start: 5.5, dur: 0.8 },   // D5
-        { freq: 523.25, start: 6.3, dur: 0.5 },   // C5
-        { freq: 587.33, start: 6.8, dur: 1.0 },   // D5
-
-        // Phrase 3
-        { freq: 392.00, start: 8.0, dur: 0.6 },   // G4
-        { freq: 440.00, start: 8.6, dur: 0.4 },   // A4
-        { freq: 523.25, start: 9.0, dur: 0.8 },   // C5
-        { freq: 587.33, start: 9.8, dur: 0.4 },   // D5
-        { freq: 523.25, start: 10.2, dur: 0.6 },  // C5
-        { freq: 440.00, start: 10.8, dur: 0.4 },  // A4
-        { freq: 392.00, start: 11.2, dur: 1.2 },  // G4
-
-        // Phrase 4 - lặp lại nhẹ nhàng
-        { freq: 523.25, start: 12.5, dur: 0.5 },  // C5
-        { freq: 659.25, start: 13.0, dur: 0.5 },  // E5
-        { freq: 783.99, start: 13.5, dur: 0.8 },  // G5
-        { freq: 880.00, start: 14.3, dur: 0.6 },  // A5
-        { freq: 783.99, start: 14.9, dur: 0.5 },  // G5
-        { freq: 659.25, start: 15.4, dur: 0.8 },  // E5
-        { freq: 523.25, start: 16.2, dur: 1.5 },  // C5
-    ];
-
-    const totalDuration = 18;
-
-    function playOnce(offset) {
-        notes.forEach(note => {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            const filter = audioCtx.createBiquadFilter();
-
-            osc.type = 'sine';
-            osc.frequency.value = note.freq;
-
-            filter.type = 'lowpass';
-            filter.frequency.value = 2000;
-
-            // Envelope: mềm mại
-            const t = audioCtx.currentTime + offset + note.start;
-            gain.gain.setValueAtTime(0, t);
-            gain.gain.linearRampToValueAtTime(0.12, t + 0.05);
-            gain.gain.exponentialRampToValueAtTime(0.001, t + note.dur);
-
-            osc.connect(filter);
-            filter.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            osc.start(t);
-            osc.stop(t + note.dur + 0.1);
+function tryPlayMusic() {
+    audioElement = document.getElementById('bg-music');
+    if (audioElement && audioElement.src && !audioElement.error) {
+        audioElement.volume = 0.5;
+        audioElement.play().then(() => {
+            musicPlaying = true;
+            updateMusicBtn(true);
+        }).catch(() => {
+            // MP3 không phát được, thử Web Audio
+            startWebAudioMelody();
         });
     }
-
-    // Phát lặp lại
-    function scheduleLoop() {
-        if (!musicPlaying) return;
-        playOnce(0);
-        const timer = setTimeout(scheduleLoop, totalDuration * 1000);
-        musicTimers.push(timer);
-    }
-
-    scheduleLoop();
 }
 
 function toggleMusic() {
-    const btn = document.querySelector('.music-btn');
-
     if (musicPlaying) {
         musicPlaying = false;
-        btn.classList.remove('playing');
-        btn.textContent = '🔇';
+        updateMusicBtn(false);
+        if (audioElement && !audioElement.paused) audioElement.pause();
+        if (audioCtx) { audioCtx.close(); audioCtx = null; }
         musicTimers.forEach(t => clearTimeout(t));
         musicTimers = [];
-        if (audioCtx) {
-            audioCtx.close();
-            audioCtx = null;
-        }
     } else {
         musicPlaying = true;
-        btn.classList.add('playing');
-        btn.textContent = '🎵';
-        createMelody();
+        updateMusicBtn(true);
+        if (audioElement && audioElement.src) {
+            audioElement.play().catch(() => startWebAudioMelody());
+        } else {
+            startWebAudioMelody();
+        }
+    }
+}
+
+function updateMusicBtn(playing) {
+    const btn = document.querySelector('.music-btn');
+    if (!btn) return;
+    btn.textContent = playing ? '🎵' : '🔇';
+    btn.classList.toggle('playing', playing);
+}
+
+function startWebAudioMelody() {
+    if (audioCtx) audioCtx.close();
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    musicPlaying = true;
+    updateMusicBtn(true);
+
+    const notes = [
+        { f: 523.25, s: 0, d: 0.5 }, { f: 587.33, s: 0.5, d: 0.5 }, { f: 659.25, s: 1, d: 0.8 },
+        { f: 523.25, s: 1.8, d: 0.4 }, { f: 659.25, s: 2.2, d: 0.6 }, { f: 783.99, s: 2.8, d: 1 },
+        { f: 783.99, s: 4, d: 0.5 }, { f: 698.46, s: 4.5, d: 0.5 }, { f: 659.25, s: 5, d: 0.5 },
+        { f: 587.33, s: 5.5, d: 0.8 }, { f: 523.25, s: 6.3, d: 0.5 }, { f: 587.33, s: 6.8, d: 1 },
+        { f: 392, s: 8, d: 0.6 }, { f: 440, s: 8.6, d: 0.4 }, { f: 523.25, s: 9, d: 0.8 },
+        { f: 587.33, s: 9.8, d: 0.4 }, { f: 523.25, s: 10.2, d: 0.6 }, { f: 440, s: 10.8, d: 0.4 },
+        { f: 392, s: 11.2, d: 1.2 }, { f: 523.25, s: 12.5, d: 0.5 }, { f: 659.25, s: 13, d: 0.5 },
+        { f: 783.99, s: 13.5, d: 0.8 }, { f: 880, s: 14.3, d: 0.6 }, { f: 783.99, s: 14.9, d: 0.5 },
+        { f: 659.25, s: 15.4, d: 0.8 }, { f: 523.25, s: 16.2, d: 1.5 },
+    ];
+    const dur = 18;
+    function play() {
+        if (!musicPlaying || !audioCtx) return;
+        notes.forEach(n => {
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = 'sine'; osc.frequency.value = n.f;
+            const t = audioCtx.currentTime + n.s;
+            g.gain.setValueAtTime(0, t);
+            g.gain.linearRampToValueAtTime(0.1, t + 0.05);
+            g.gain.exponentialRampToValueAtTime(0.001, t + n.d);
+            osc.connect(g); g.connect(audioCtx.destination);
+            osc.start(t); osc.stop(t + n.d + 0.1);
+        });
+        const timer = setTimeout(play, dur * 1000);
+        musicTimers.push(timer);
+    }
+    play();
+}
+
+// ============================================
+// 10. CURSOR TRAIL TRÁI TIM
+// ============================================
+let trailCount = 0;
+
+function startCursorTrail() {
+    const hearts = ['💕', '💖', '💗', '✨', '💝'];
+    let lastTime = 0;
+
+    function createTrailHeart(x, y) {
+        if (trailCount >= PERF.maxCursorTrail) return;
+        const now = Date.now();
+        if (now - lastTime < 50) return;
+        lastTime = now;
+        trailCount++;
+
+        const el = document.createElement('span');
+        el.className = 'cursor-heart';
+        el.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+        el.style.cssText = `left:${x}px;top:${y}px;font-size:${10 + Math.random() * 12}px`;
+        document.body.appendChild(el);
+        setTimeout(() => { el.remove(); trailCount--; }, 1000);
+    }
+
+    document.addEventListener('mousemove', e => createTrailHeart(e.clientX, e.clientY), { passive: true });
+    document.addEventListener('touchmove', e => {
+        const touch = e.touches[0];
+        if (touch) createTrailHeart(touch.clientX, touch.clientY);
+    }, { passive: true });
+}
+
+// ============================================
+// 11. ĐÈN LỒNG BAY LÊN TRỜI
+// ============================================
+let lanternCount = 0;
+
+function createLantern() {
+    if (lanternCount >= PERF.maxLanterns) return;
+    lanternCount++;
+
+    const el = document.createElement('div');
+    el.className = 'lantern';
+    el.innerHTML = '<div class="lantern-body"><div class="lantern-glow"></div></div>';
+    const duration = 12 + Math.random() * 8;
+    const startX = 5 + Math.random() * 90;
+    el.style.cssText = `left:${startX}%;animation-duration:${duration}s`;
+    document.body.appendChild(el);
+    setTimeout(() => { el.remove(); lanternCount--; }, duration * 1000);
+}
+
+function startLanterns() {
+    createLantern();
+    setTimeout(createLantern, 2000);
+    setInterval(createLantern, PERF.lanternInterval);
+}
+
+// ============================================
+// 12. PARTICLE TEXT (Tên từ hạt sáng)
+// ============================================
+let ptCanvas, ptCtx, ptParticles = [], ptRunning = false;
+
+function startParticleText() {
+    ptCanvas = document.getElementById('particle-text-canvas');
+    if (!ptCanvas) return;
+    ptCtx = ptCanvas.getContext('2d');
+    ptCanvas.width = window.innerWidth;
+    ptCanvas.height = window.innerHeight;
+
+    // Vẽ text trên canvas ẩn để lấy tọa độ pixel
+    const temp = document.createElement('canvas');
+    const tCtx = temp.getContext('2d');
+    temp.width = ptCanvas.width;
+    temp.height = ptCanvas.height;
+    const fs = IS_MOBILE ? 28 : 56;
+    tCtx.font = `italic bold ${fs}px Georgia, serif`;
+    tCtx.fillStyle = '#fff';
+    tCtx.textAlign = 'center';
+    tCtx.textBaseline = 'middle';
+    tCtx.fillText(LOVER_NAME, temp.width / 2, temp.height / 2);
+
+    // Lấy pixel positions
+    const imageData = tCtx.getImageData(0, 0, temp.width, temp.height);
+    const positions = [];
+    const gap = IS_MOBILE ? 5 : 3;
+    for (let y = 0; y < temp.height; y += gap) {
+        for (let x = 0; x < temp.width; x += gap) {
+            if (imageData.data[(y * temp.width + x) * 4 + 3] > 128) {
+                positions.push({ x, y });
+            }
+        }
+    }
+
+    // Chọn ngẫu nhiên subset
+    const selected = [];
+    const max = Math.min(positions.length, PERF.particleTextCount);
+    const step = Math.max(1, Math.floor(positions.length / max));
+    for (let i = 0; i < positions.length && selected.length < max; i += step) {
+        selected.push(positions[i]);
+    }
+
+    // Tạo particles
+    const colors = ['#ffd700', '#ff6b9d', '#ff9ec5', '#ffe44d', '#c084fc'];
+    ptParticles = selected.map(pos => ({
+        x: Math.random() * ptCanvas.width,
+        y: Math.random() * ptCanvas.height,
+        tx: pos.x, ty: pos.y,
+        size: 1.5 + Math.random() * 1.5,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        speed: 0.03 + Math.random() * 0.03,
+        phase: 'converge', // converge -> hold -> scatter
+    }));
+
+    ptRunning = true;
+    let startTime = Date.now();
+
+    function animate() {
+        if (!ptRunning) return;
+        ptCtx.clearRect(0, 0, ptCanvas.width, ptCanvas.height);
+        const elapsed = Date.now() - startTime;
+
+        for (const p of ptParticles) {
+            if (elapsed < 2500) {
+                // Converge
+                p.x += (p.tx - p.x) * p.speed;
+                p.y += (p.ty - p.y) * p.speed;
+            } else if (elapsed < 4000) {
+                // Hold - nhẹ nhàng lung lay
+                p.x = p.tx + Math.sin(elapsed * 0.003 + p.tx) * 1.5;
+                p.y = p.ty + Math.cos(elapsed * 0.003 + p.ty) * 1.5;
+            } else {
+                // Scatter
+                p.x += (p.x - ptCanvas.width / 2) * 0.02;
+                p.y += (p.y - ptCanvas.height / 2) * 0.02;
+            }
+
+            const alpha = elapsed > 4500 ? Math.max(0, 1 - (elapsed - 4500) / 1000) : Math.min(1, elapsed / 800);
+            ptCtx.globalAlpha = alpha;
+            ptCtx.fillStyle = p.color;
+            ptCtx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+        }
+
+        if (elapsed < 5500) {
+            requestAnimationFrame(animate);
+        } else {
+            ptRunning = false;
+            ptCtx.clearRect(0, 0, ptCanvas.width, ptCanvas.height);
+        }
+    }
+    animate();
+}
+
+// ============================================
+// 13. PARALLAX SCROLLING
+// ============================================
+function initParallax() {
+    if (IS_MOBILE) return; // Tắt parallax trên mobile để tối ưu
+
+    const starfield = document.getElementById('starfield');
+    const canvas = document.getElementById('fireworks-canvas');
+
+    window.addEventListener('scroll', () => {
+        const s = window.pageYOffset;
+        if (starfield) starfield.style.transform = `translate3d(0, ${s * 0.3}px, 0)`;
+        if (canvas) canvas.style.transform = `translate3d(0, ${s * 0.15}px, 0)`;
+    }, { passive: true });
+}
+
+// ============================================
+// 14. SHAKE DETECTION (Mobile)
+// ============================================
+function initShakeDetection() {
+    if (!IS_MOBILE) return;
+
+    let lastShake = 0;
+
+    function handleShake(e) {
+        const acc = e.accelerationIncludingGravity;
+        if (!acc) return;
+        const force = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
+        if (force > 35 && Date.now() - lastShake > 1500) {
+            lastShake = Date.now();
+            for (let i = 0; i < 4; i++) setTimeout(launchFirework, i * 200);
+            spawnConfetti(IS_MOBILE ? 15 : 30);
+        }
+    }
+
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+        // iOS 13+
+        document.addEventListener('click', function iosPermission() {
+            DeviceMotionEvent.requestPermission().then(p => {
+                if (p === 'granted') window.addEventListener('devicemotion', handleShake, { passive: true });
+            }).catch(() => { });
+            document.removeEventListener('click', iosPermission);
+        }, { once: true });
+    } else {
+        window.addEventListener('devicemotion', handleShake, { passive: true });
     }
 }
 
 // ============================================
-// 9. PARTICLE BACKGROUND - NỀN TRÁI TIM BAY
+// 15. AUTO-SCROLL (Tự chạy mọi thứ)
 // ============================================
-function createBackgroundParticle() {
-    const particle = document.createElement('span');
-    particle.className = 'bg-particle';
-    const symbols = ['💕', '✨', '⭐', '💖', '🌟'];
-    particle.textContent = symbols[Math.floor(Math.random() * symbols.length)];
-    particle.style.left = Math.random() * 100 + '%';
-    particle.style.fontSize = (10 + Math.random() * 14) + 'px';
-    const duration = 15 + Math.random() * 20;
-    particle.style.animationDuration = duration + 's';
-    particle.style.animationDelay = Math.random() * 5 + 's';
-    document.body.appendChild(particle);
+function startAutoPlay() {
+    const sections = document.querySelectorAll('.section');
+    if (sections.length < 2) return;
 
-    setTimeout(() => particle.remove(), (duration + 5) * 1000);
+    // Sau 8s ở countdown → scroll đến lời chúc
+    setTimeout(() => {
+        sections[1].scrollIntoView({ behavior: 'smooth' });
+        // Bắt đầu typing khi scroll đến
+        setTimeout(() => {
+            startTyping();
+            waitForTypingThenGift(sections);
+        }, 1000);
+    }, 8000);
 }
 
-function startBackgroundParticles() {
-    for (let i = 0; i < 10; i++) {
-        setTimeout(() => createBackgroundParticle(), i * 800);
-    }
-    setInterval(createBackgroundParticle, 3000);
+function waitForTypingThenGift(sections) {
+    const check = setInterval(() => {
+        if (typingDone) {
+            clearInterval(check);
+            // Chờ 3s sau typing xong → scroll đến gift
+            setTimeout(() => {
+                if (sections[2]) {
+                    sections[2].scrollIntoView({ behavior: 'smooth' });
+                    // Tự mở gift sau 2s
+                    setTimeout(openGift, 2000);
+                }
+            }, 3000);
+        }
+    }, 500);
 }
 
 // ============================================
-// 10. STARFIELD - NỀN SAO LẤP LÁNH
+// 16. STARFIELD
 // ============================================
 function initStarfield() {
     const container = document.getElementById('starfield');
     if (!container) return;
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < PERF.starCount; i++) {
         const star = document.createElement('div');
         star.className = 'star';
-        star.style.left = Math.random() * 100 + '%';
-        star.style.top = Math.random() * 100 + '%';
-        star.style.width = (1 + Math.random() * 2.5) + 'px';
-        star.style.height = star.style.width;
-        star.style.animationDuration = (2 + Math.random() * 4) + 's';
-        star.style.animationDelay = Math.random() * 4 + 's';
-        if (Math.random() > 0.7) {
-            star.style.background = '#ffd700';
-        }
+        const size = 1 + Math.random() * 2;
+        star.style.cssText = `left:${Math.random() * 100}%;top:${Math.random() * 100}%;width:${size}px;height:${size}px;animation-duration:${2 + Math.random() * 4}s;animation-delay:${Math.random() * 4}s`;
+        if (Math.random() > 0.7) star.style.background = '#ffd700';
         container.appendChild(star);
     }
+}
+
+// ============================================
+// 17. BACKGROUND PARTICLES
+// ============================================
+let bgPCount = 0;
+
+function createBackgroundParticle() {
+    if (bgPCount >= PERF.maxBgParticles) return;
+    bgPCount++;
+    const el = document.createElement('span');
+    el.className = 'bg-particle';
+    const symbols = ['💕', '✨', '⭐', '💖'];
+    el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+    const duration = 15 + Math.random() * 15;
+    el.style.cssText = `left:${Math.random() * 100}%;font-size:${10 + Math.random() * 10}px;animation-duration:${duration}s;animation-delay:${Math.random() * 3}s`;
+    document.body.appendChild(el);
+    setTimeout(() => { el.remove(); bgPCount--; }, (duration + 3) * 1000);
+}
+
+function startBackgroundParticles() {
+    for (let i = 0; i < (IS_MOBILE ? 2 : 5); i++) setTimeout(createBackgroundParticle, i * 1000);
+    setInterval(createBackgroundParticle, PERF.bgParticleInterval);
 }
 
 // ============================================
@@ -694,4 +800,5 @@ function initStarfield() {
 document.addEventListener('DOMContentLoaded', () => {
     initWelcome();
     initStarfield();
+    checkVideo();
 });
