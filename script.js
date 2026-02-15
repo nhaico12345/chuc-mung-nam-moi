@@ -438,17 +438,14 @@ function spawnConfetti(count) {
 }
 
 // ============================================
-// 9. NHẠC NỀN (MP3 + fallback Web Audio)
+// 9. NHẠC NỀN (MP3)
 // ============================================
 let musicPlaying = false;
 let audioElement = null;
-let audioCtx = null;
-let musicTimers = [];
 
 function tryPlayMusic() {
     audioElement = document.getElementById('bg-music');
     if (audioElement) {
-        // Cố gắng phát nhạc ngay
         audioElement.volume = 0.5;
         const playPromise = audioElement.play();
 
@@ -458,7 +455,6 @@ function tryPlayMusic() {
                 updateMusicBtn(true);
             }).catch(error => {
                 console.log("Autoplay prevented. Waiting for interaction.");
-                // Nếu bị chặn autoplay, sẽ chờ tương tác lần đầu để phát
                 document.addEventListener('click', playMusicOnInteraction, { once: true });
                 document.addEventListener('touchstart', playMusicOnInteraction, { once: true });
             });
@@ -471,9 +467,7 @@ function playMusicOnInteraction() {
         audioElement.play().then(() => {
             musicPlaying = true;
             updateMusicBtn(true);
-        }).catch(() => {
-            startWebAudioMelody(); // Fallback nếu mp3 lỗi
-        });
+        }).catch(e => console.error("Audio play failed:", e));
     }
 }
 
@@ -482,16 +476,11 @@ function toggleMusic() {
         musicPlaying = false;
         updateMusicBtn(false);
         if (audioElement && !audioElement.paused) audioElement.pause();
-        if (audioCtx) { audioCtx.close(); audioCtx = null; }
-        musicTimers.forEach(t => clearTimeout(t));
-        musicTimers = [];
     } else {
         musicPlaying = true;
         updateMusicBtn(true);
         if (audioElement) {
-            audioElement.play().catch(() => startWebAudioMelody());
-        } else {
-            startWebAudioMelody();
+            audioElement.play().catch(e => console.error("Audio play failed:", e));
         }
     }
 }
@@ -501,43 +490,6 @@ function updateMusicBtn(playing) {
     if (!btn) return;
     btn.textContent = playing ? '🎵' : '🔇';
     btn.classList.toggle('playing', playing);
-}
-
-function startWebAudioMelody() {
-    if (audioCtx) audioCtx.close();
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    musicPlaying = true;
-    updateMusicBtn(true);
-
-    const notes = [
-        { f: 523.25, s: 0, d: 0.5 }, { f: 587.33, s: 0.5, d: 0.5 }, { f: 659.25, s: 1, d: 0.8 },
-        { f: 523.25, s: 1.8, d: 0.4 }, { f: 659.25, s: 2.2, d: 0.6 }, { f: 783.99, s: 2.8, d: 1 },
-        { f: 783.99, s: 4, d: 0.5 }, { f: 698.46, s: 4.5, d: 0.5 }, { f: 659.25, s: 5, d: 0.5 },
-        { f: 587.33, s: 5.5, d: 0.8 }, { f: 523.25, s: 6.3, d: 0.5 }, { f: 587.33, s: 6.8, d: 1 },
-        { f: 392, s: 8, d: 0.6 }, { f: 440, s: 8.6, d: 0.4 }, { f: 523.25, s: 9, d: 0.8 },
-        { f: 587.33, s: 9.8, d: 0.4 }, { f: 523.25, s: 10.2, d: 0.6 }, { f: 440, s: 10.8, d: 0.4 },
-        { f: 392, s: 11.2, d: 1.2 }, { f: 523.25, s: 12.5, d: 0.5 }, { f: 659.25, s: 13, d: 0.5 },
-        { f: 783.99, s: 13.5, d: 0.8 }, { f: 880, s: 14.3, d: 0.6 }, { f: 783.99, s: 14.9, d: 0.5 },
-        { f: 659.25, s: 15.4, d: 0.8 }, { f: 523.25, s: 16.2, d: 1.5 },
-    ];
-    const dur = 18;
-    function play() {
-        if (!musicPlaying || !audioCtx) return;
-        notes.forEach(n => {
-            const osc = audioCtx.createOscillator();
-            const g = audioCtx.createGain();
-            osc.type = 'sine'; osc.frequency.value = n.f;
-            const t = audioCtx.currentTime + n.s;
-            g.gain.setValueAtTime(0, t);
-            g.gain.linearRampToValueAtTime(0.1, t + 0.05);
-            g.gain.exponentialRampToValueAtTime(0.001, t + n.d);
-            osc.connect(g); g.connect(audioCtx.destination);
-            osc.start(t); osc.stop(t + n.d + 0.1);
-        });
-        const timer = setTimeout(play, dur * 1000);
-        musicTimers.push(timer);
-    }
-    play();
 }
 
 // ============================================
