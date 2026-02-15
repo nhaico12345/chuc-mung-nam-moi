@@ -447,14 +447,32 @@ let musicTimers = [];
 
 function tryPlayMusic() {
     audioElement = document.getElementById('bg-music');
-    if (audioElement && audioElement.src && !audioElement.error) {
+    if (audioElement) {
+        // Cố gắng phát nhạc ngay
         audioElement.volume = 0.5;
+        const playPromise = audioElement.play();
+
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                musicPlaying = true;
+                updateMusicBtn(true);
+            }).catch(error => {
+                console.log("Autoplay prevented. Waiting for interaction.");
+                // Nếu bị chặn autoplay, sẽ chờ tương tác lần đầu để phát
+                document.addEventListener('click', playMusicOnInteraction, { once: true });
+                document.addEventListener('touchstart', playMusicOnInteraction, { once: true });
+            });
+        }
+    }
+}
+
+function playMusicOnInteraction() {
+    if (audioElement && audioElement.paused) {
         audioElement.play().then(() => {
             musicPlaying = true;
             updateMusicBtn(true);
         }).catch(() => {
-            // MP3 không phát được, thử Web Audio
-            startWebAudioMelody();
+            startWebAudioMelody(); // Fallback nếu mp3 lỗi
         });
     }
 }
@@ -470,7 +488,7 @@ function toggleMusic() {
     } else {
         musicPlaying = true;
         updateMusicBtn(true);
-        if (audioElement && audioElement.src) {
+        if (audioElement) {
             audioElement.play().catch(() => startWebAudioMelody());
         } else {
             startWebAudioMelody();
