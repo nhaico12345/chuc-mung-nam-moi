@@ -565,43 +565,64 @@ function startParticleText() {
     const tCtx = temp.getContext('2d');
     temp.width = ptCanvas.width;
     temp.height = ptCanvas.height;
-    const fs = IS_MOBILE ? 28 : 56;
-    tCtx.font = `italic bold ${fs}px Georgia, serif`;
+
+    // LOGIC TỰ ĐỘNG KHỚP FONT SIZE
+    let fs = Math.min(ptCanvas.width / 6, 150); // Bắt đầu với font to
+    tCtx.font = `bold ${fs}px 'Great Vibes', 'Quicksand', sans-serif`; // Dùng font calligraphy để đẹp
+
+    // Giảm font size cho đến khi vừa chiều rộng canvas (với padding 5%)
+    while (tCtx.measureText(LOVER_NAME).width > ptCanvas.width * 0.9) {
+        fs -= 2;
+        tCtx.font = `bold ${fs}px 'Great Vibes', 'Quicksand', sans-serif`;
+        if (fs < 20) break; // An toàn
+    }
+
     tCtx.fillStyle = '#fff';
     tCtx.textAlign = 'center';
     tCtx.textBaseline = 'middle';
+
+    // Vẽ chữ ở chính giữa màn hình
     tCtx.fillText(LOVER_NAME, temp.width / 2, temp.height / 2);
 
     // Lấy pixel positions
     const imageData = tCtx.getImageData(0, 0, temp.width, temp.height);
     const positions = [];
-    const gap = IS_MOBILE ? 5 : 3;
+
+    // Điều chỉnh độ dày đặc của hạt dựa trên thiết bị
+    // Mobile cần ít hạt hơn để đỡ lag, nhưng size hạt to hơn để rõ
+    const gap = IS_MOBILE ? 4 : 3;
+
     for (let y = 0; y < temp.height; y += gap) {
         for (let x = 0; x < temp.width; x += gap) {
+            // Lấy alpha channel > 128 (pixel có màu)
             if (imageData.data[(y * temp.width + x) * 4 + 3] > 128) {
                 positions.push({ x, y });
             }
         }
     }
 
-    // Chọn ngẫu nhiên subset
+    // Chọn ngẫu nhiên subset nếu quá nhiều điểm (tối ưu hiệu năng)
     const selected = [];
-    const max = Math.min(positions.length, PERF.particleTextCount);
+    // Mobile cho phép ít hạt hơn PC
+    const maxParticles = IS_MOBILE ? 800 : 2500;
+    const max = Math.min(positions.length, maxParticles);
     const step = Math.max(1, Math.floor(positions.length / max));
+
     for (let i = 0; i < positions.length && selected.length < max; i += step) {
         selected.push(positions[i]);
     }
 
     // Tạo particles
-    const colors = ['#ffd700', '#ff6b9d', '#ff9ec5', '#ffe44d', '#c084fc'];
+    const colors = ['#ffd700', '#ff6b9d', '#ff9ec5', '#ffe44d', '#ffffff', '#ff4466'];
     ptParticles = selected.map(pos => ({
         x: Math.random() * ptCanvas.width,
         y: Math.random() * ptCanvas.height,
         tx: pos.x, ty: pos.y,
-        size: 1.5 + Math.random() * 1.5,
+        // Hạt to hơn để chữ rõ hơn: Mobile 2.5-4px, PC 2-3.5px
+        size: IS_MOBILE ? (2.5 + Math.random() * 1.5) : (2 + Math.random() * 1.5),
         color: colors[Math.floor(Math.random() * colors.length)],
-        speed: 0.03 + Math.random() * 0.03,
-        phase: 'converge', // converge -> hold -> scatter
+        speed: 0.05 + Math.random() * 0.05, // Tốc độ bay về nhanh hơn chút
+        phase: 'converge',
     }));
 
     ptRunning = true;
@@ -613,27 +634,40 @@ function startParticleText() {
         const elapsed = Date.now() - startTime;
 
         for (const p of ptParticles) {
-            if (elapsed < 2500) {
-                // Converge
-                p.x += (p.tx - p.x) * p.speed;
-                p.y += (p.ty - p.y) * p.speed;
-            } else if (elapsed < 4000) {
-                // Hold - nhẹ nhàng lung lay
-                p.x = p.tx + Math.sin(elapsed * 0.003 + p.tx) * 1.5;
-                p.y = p.ty + Math.cos(elapsed * 0.003 + p.ty) * 1.5;
+            if (elapsed < 2000) {
+                // Converge (bay về vị trí) nhanh hơn (2s)
+                // Easing function: easeOutCubic
+                p.x += (p.tx - p.x) * 0.08;
+                p.y += (p.ty - p.y) * 0.08;
+            } else if (elapsed < 5000) {
+                // Hold & Shimmer - chữ rung rinh tỏa sáng
+                // Rung nhẹ
+                const flutterX = Math.sin(elapsed * 0.005 + p.y * 0.01) * 0.5;
+                const flutterY = Math.cos(elapsed * 0.005 + p.x * 0.01) * 0.5;
+                p.x = p.tx + flutterX;
+                p.y = p.ty + flutterY;
             } else {
-                // Scatter
-                p.x += (p.x - ptCanvas.width / 2) * 0.02;
-                p.y += (p.y - ptCanvas.height / 2) * 0.02;
+                // Scatter - tan biến
+                p.x += (Math.cos(elapsed * 0.002 + p.y) * 5);
+                p.y -= Math.random() * 3; // Bay lên trời
+                p.size *= 0.95; // Teo nhỏ dần
             }
 
-            const alpha = elapsed > 4500 ? Math.max(0, 1 - (elapsed - 4500) / 1000) : Math.min(1, elapsed / 800);
+            // Opacity logic
+            let alpha = 1;
+            if (elapsed < 500) alpha = elapsed / 500; // Fade in
+            else if (elapsed > 4500) alpha = Math.max(0, 1 - (elapsed - 4500) / 1000); // Fade out
+
             ptCtx.globalAlpha = alpha;
             ptCtx.fillStyle = p.color;
-            ptCtx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+
+            // Vẽ hạt tròn thay vì vuông cho đẹp
+            ptCtx.beginPath();
+            ptCtx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2);
+            ptCtx.fill();
         }
 
-        if (elapsed < 5500) {
+        if (elapsed < 6000) {
             requestAnimationFrame(animate);
         } else {
             ptRunning = false;
