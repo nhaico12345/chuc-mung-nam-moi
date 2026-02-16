@@ -28,6 +28,7 @@ let musicPlaying = false;
 let audioElement = null;
 let currentPage = 0;
 const totalPages = 4;
+let pageNavLocked = true; // Khoá chuyển trang cho đến khi countdown về 0
 let audioCtx = null;
 
 // ============================================
@@ -253,9 +254,6 @@ function openLetter() {
         tryPlayMusic();
         initPageNav();
     }, 300);
-
-    // Auto-play: chuyển trang tự động
-    setTimeout(startAutoPlay, 1000);
 }
 
 // ============================================
@@ -276,6 +274,8 @@ function startCountdown() {
                 for (let i = 0; i < 8; i++) setTimeout(launchFirework, i * 300);
                 spawnConfetti(IS_MOBILE ? 20 : 50);
                 showVideo();
+                // Mở khoá chuyển trang sau khi các event giao thừa chạy xong
+                scheduleUnlockPageNav();
             }
             return;
         }
@@ -906,13 +906,51 @@ function initPageNav() {
     }, { passive: true });
 }
 
+// Lên lịch mở khoá chuyển trang sau event giao thừa
+function scheduleUnlockPageNav() {
+    const video = document.getElementById('celebration-video');
+
+    if (video && video.duration) {
+        // Đợi video kết thúc + 1s buffer
+        video.addEventListener('ended', () => {
+            setTimeout(unlockPageNav, 1000);
+        });
+        // Fallback: nếu video lỗi hoặc quá dài, mở sau 15s
+        setTimeout(unlockPageNav, 15000);
+    } else {
+        // Không có video → mở sau 5s (chờ pháo hoa + confetti)
+        setTimeout(unlockPageNav, 5000);
+    }
+}
+
+function unlockPageNav() {
+    if (!pageNavLocked) return; // Đã mở rồi
+    pageNavLocked = false;
+
+    // Hiện page navigation
+    const nav = document.getElementById('page-nav');
+    if (nav) {
+        nav.style.opacity = '1';
+        nav.style.pointerEvents = 'auto';
+    }
+
+    // Hiện page-hint "Vuốt hoặc nhấn → để sang trang"
+    const hint = document.querySelector('.page-hint');
+    if (hint) hint.style.opacity = '1';
+
+    // Bắt đầu auto-play chuyển trang
+    setTimeout(startAutoPlay, 2000);
+}
+
 function changePage(direction) {
+    if (pageNavLocked) return; // Khoá khi chưa đến giao thừa
     const newPage = currentPage + direction;
     if (newPage < 0 || newPage >= totalPages) return;
     goToPage(newPage);
 }
 
 function goToPage(pageIndex) {
+    if (pageNavLocked) return; // Khoá khi chưa đến giao thừa
     if (pageIndex === currentPage || pageIndex < 0 || pageIndex >= totalPages) return;
 
     const goingForward = pageIndex > currentPage;
