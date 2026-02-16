@@ -273,9 +273,7 @@ function startCountdown() {
                 document.querySelector('.countdown-complete').classList.add('show');
                 for (let i = 0; i < 8; i++) setTimeout(launchFirework, i * 300);
                 spawnConfetti(IS_MOBILE ? 20 : 50);
-                showVideo();
-                // Mở khoá chuyển trang sau khi các event giao thừa chạy xong
-                scheduleUnlockPageNav();
+                showVideo(); // showVideo sẽ tự unlock page nav khi xong
             }
             return;
         }
@@ -652,12 +650,48 @@ function checkVideo() {
 function showVideo() {
     const overlay = document.getElementById('video-overlay');
     const video = document.getElementById('celebration-video');
-    if (!overlay || !video) return;
+    if (!overlay || !video) {
+        // Không có video → unlock ngay sau 3s (để pháo hoa + confetti chạy)
+        setTimeout(unlockPageNav, 3000);
+        return;
+    }
+
     overlay.classList.add('active');
-    video.play().catch(() => { });
-    video.addEventListener('ended', () => {
+
+    // Cho phép click để skip video
+    overlay.addEventListener('click', function skipVideo() {
+        overlay.removeEventListener('click', skipVideo);
+        video.pause();
         overlay.classList.remove('active');
+        setTimeout(unlockPageNav, 500);
     });
+
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+        playPromise.then(() => {
+            // Video đang phát → đợi kết thúc
+            video.addEventListener('ended', () => {
+                overlay.classList.remove('active');
+                setTimeout(unlockPageNav, 500);
+            });
+            // Fallback: nếu video quá dài → auto skip sau 30s
+            setTimeout(() => {
+                if (!video.paused) video.pause();
+                overlay.classList.remove('active');
+                setTimeout(unlockPageNav, 500);
+            }, 30000);
+        }).catch(() => {
+            // Video KHÔNG phát được (browser chặn autoplay) → tắt overlay ngay + unlock
+            overlay.classList.remove('active');
+            setTimeout(unlockPageNav, 2000);
+        });
+    } else {
+        // Browser cũ không trả Promise → fallback timeout
+        setTimeout(() => {
+            overlay.classList.remove('active');
+            setTimeout(unlockPageNav, 500);
+        }, 5000);
+    }
 }
 
 // ============================================
