@@ -118,6 +118,78 @@
             </div>
         </section>
 
+        <!-- Gallery Ảnh Kỷ Niệm -->
+        <section class="section gallery-section" id="gallery-section">
+            <h2 class="gallery-title">🖼️ Kỷ Niệm Của Chúng Ta</h2>
+            <p class="gallery-subtitle">Những khoảnh khắc đáng nhớ bên nhau ✨</p>
+
+            <div class="gallery-grid" id="gallery-grid">
+                <div class="gallery-item" onclick="openLightbox(0)">
+                    <img src="anh/z7538148079369_3b58fabb2458d542f45aefeebda582c7.jpg" alt="Kỷ niệm 1" loading="lazy">
+                    <div class="gallery-overlay"><span>💕</span></div>
+                </div>
+                <div class="gallery-item" onclick="openLightbox(1)">
+                    <img src="anh/z7538148093159_dacd11dcaad58e8e406992b324ca4f2f.jpg" alt="Kỷ niệm 2" loading="lazy">
+                    <div class="gallery-overlay"><span>💖</span></div>
+                </div>
+                <div class="gallery-item" onclick="openLightbox(2)">
+                    <img src="anh/z7538148094666_23071c33da61f65b1d9e2db02f653a92.jpg" alt="Kỷ niệm 3" loading="lazy">
+                    <div class="gallery-overlay"><span>💗</span></div>
+                </div>
+                <div class="gallery-item" onclick="openLightbox(3)">
+                    <img src="anh/z7538148096271_3e4d0bae9afa7e4f63c6d4238af9b7f6.jpg" alt="Kỷ niệm 4" loading="lazy">
+                    <div class="gallery-overlay"><span>✨</span></div>
+                </div>
+                <div class="gallery-item" onclick="openLightbox(4)">
+                    <img src="anh/z7538148098402_2769a9f1161dc0a42d9e278b22d51cbc.jpg" alt="Kỷ niệm 5" loading="lazy">
+                    <div class="gallery-overlay"><span>💝</span></div>
+                </div>
+                <div class="gallery-item" onclick="openLightbox(5)">
+                    <img src="anh/z7538148099395_4ae7117b33d731b95866a1bf7b777b2c.jpg" alt="Kỷ niệm 6" loading="lazy">
+                    <div class="gallery-overlay"><span>🌸</span></div>
+                </div>
+                <div class="gallery-item" onclick="openLightbox(6)">
+                    <img src="anh/z7538148099754_e8a7d114bfc8bbdf388bf294299ca603.jpg" alt="Kỷ niệm 7" loading="lazy">
+                    <div class="gallery-overlay"><span>💕</span></div>
+                </div>
+                <div class="gallery-item" onclick="openLightbox(7)">
+                    <img src="anh/z7538148103158_ba5320d36f22d72e295cfb8bd9cab7b6.jpg" alt="Kỷ niệm 8" loading="lazy">
+                    <div class="gallery-overlay"><span>💖</span></div>
+                </div>
+                <div class="gallery-item" onclick="openLightbox(8)">
+                    <img src="anh/z7538148108267_0cf240873128321c89c46a28f268666e.jpg" alt="Kỷ niệm 9" loading="lazy">
+                    <div class="gallery-overlay"><span>💗</span></div>
+                </div>
+                <div class="gallery-item" onclick="openLightbox(9)">
+                    <img src="anh/z7538148110785_51ea48c139aa8111b43dcb59c1f08972.jpg" alt="Kỷ niệm 10" loading="lazy">
+                    <div class="gallery-overlay"><span>✨</span></div>
+                </div>
+                <div class="gallery-item" onclick="openLightbox(10)">
+                    <img src="anh/z7538148121807_f9aaa722193a0105f902a313114fc49a.jpg" alt="Kỷ niệm 11" loading="lazy">
+                    <div class="gallery-overlay"><span>💝</span></div>
+                </div>
+                <div class="gallery-item" onclick="openLightbox(11)">
+                    <img src="anh/z7538148123540_7080aabd5aede31a0b3faf656633d788.jpg" alt="Kỷ niệm 12" loading="lazy">
+                    <div class="gallery-overlay"><span>🌸</span></div>
+                </div>
+                <div class="gallery-item" onclick="openLightbox(12)">
+                    <img src="anh/z7538148126717_a306674fd19fe2921ae5ab4fe4e695c3.jpg" alt="Kỷ niệm 13" loading="lazy">
+                    <div class="gallery-overlay"><span>💕</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lightbox Overlay -->
+        <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+            <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+            <button class="lightbox-nav lightbox-prev" onclick="changeLightboxImage(-1, event)">&#10094;</button>
+            <div class="lightbox-content">
+                <img id="lightbox-img" src="" alt="Kỷ niệm">
+                <div class="lightbox-counter" id="lightbox-counter"></div>
+            </div>
+            <button class="lightbox-nav lightbox-next" onclick="changeLightboxImage(1, event)">&#10095;</button>
+        </div>
+
         <!-- Gift Section -->
         <section class="section gift-section" id="gift-section">
             <h2 class="gift-title">Một Món Quà Nhỏ</h2>

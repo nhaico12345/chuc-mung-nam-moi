@@ -747,12 +747,18 @@ function waitForTypingThenGift(sections) {
     const check = setInterval(() => {
         if (typingDone) {
             clearInterval(check);
-            // Chờ 3s sau typing xong → scroll đến gift
+            // Chờ 3s sau typing xong → scroll đến Gallery ảnh
             setTimeout(() => {
                 if (sections[2]) {
                     sections[2].scrollIntoView({ behavior: 'smooth' });
-                    // Tự mở gift sau 2s
-                    setTimeout(openGift, 2000);
+                    // Chờ 6s xem ảnh → scroll đến Gift
+                    setTimeout(() => {
+                        if (sections[3]) {
+                            sections[3].scrollIntoView({ behavior: 'smooth' });
+                            // Tự mở gift sau 2s
+                            setTimeout(openGift, 2000);
+                        }
+                    }, 6000);
                 }
             }, 3000);
         }
@@ -797,6 +803,79 @@ function startBackgroundParticles() {
     for (let i = 0; i < (IS_MOBILE ? 2 : 5); i++) setTimeout(createBackgroundParticle, i * 1000);
     setInterval(createBackgroundParticle, PERF.bgParticleInterval);
 }
+
+// ============================================
+// 18. LIGHTBOX GALLERY
+// ============================================
+const galleryImages = [
+    'anh/z7538148079369_3b58fabb2458d542f45aefeebda582c7.jpg',
+    'anh/z7538148093159_dacd11dcaad58e8e406992b324ca4f2f.jpg',
+    'anh/z7538148094666_23071c33da61f65b1d9e2db02f653a92.jpg',
+    'anh/z7538148096271_3e4d0bae9afa7e4f63c6d4238af9b7f6.jpg',
+    'anh/z7538148098402_2769a9f1161dc0a42d9e278b22d51cbc.jpg',
+    'anh/z7538148099395_4ae7117b33d731b95866a1bf7b777b2c.jpg',
+    'anh/z7538148099754_e8a7d114bfc8bbdf388bf294299ca603.jpg',
+    'anh/z7538148103158_ba5320d36f22d72e295cfb8bd9cab7b6.jpg',
+    'anh/z7538148108267_0cf240873128321c89c46a28f268666e.jpg',
+    'anh/z7538148110785_51ea48c139aa8111b43dcb59c1f08972.jpg',
+    'anh/z7538148121807_f9aaa722193a0105f902a313114fc49a.jpg',
+    'anh/z7538148123540_7080aabd5aede31a0b3faf656633d788.jpg',
+    'anh/z7538148126717_a306674fd19fe2921ae5ab4fe4e695c3.jpg',
+];
+let currentLightboxIndex = 0;
+
+function openLightbox(index) {
+    currentLightboxIndex = index;
+    const lightbox = document.getElementById('lightbox');
+    const img = document.getElementById('lightbox-img');
+    const counter = document.getElementById('lightbox-counter');
+    if (!lightbox || !img) return;
+
+    img.src = galleryImages[index];
+    counter.textContent = `${index + 1} / ${galleryImages.length}`;
+    lightbox.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Ngăn scroll khi lightbox mở
+}
+
+function closeLightbox(event) {
+    if (event && event.target !== event.currentTarget && !event.target.classList.contains('lightbox-close')) return;
+    const lightbox = document.getElementById('lightbox');
+    if (lightbox) lightbox.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+function changeLightboxImage(direction, event) {
+    if (event) event.stopPropagation();
+    currentLightboxIndex += direction;
+    if (currentLightboxIndex < 0) currentLightboxIndex = galleryImages.length - 1;
+    if (currentLightboxIndex >= galleryImages.length) currentLightboxIndex = 0;
+
+    const img = document.getElementById('lightbox-img');
+    const counter = document.getElementById('lightbox-counter');
+    if (img) img.src = galleryImages[currentLightboxIndex];
+    if (counter) counter.textContent = `${currentLightboxIndex + 1} / ${galleryImages.length}`;
+}
+
+// Phím tắt: ESC đóng, ← → chuyển ảnh
+document.addEventListener('keydown', e => {
+    const lightbox = document.getElementById('lightbox');
+    if (!lightbox || !lightbox.classList.contains('active')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') changeLightboxImage(-1);
+    if (e.key === 'ArrowRight') changeLightboxImage(1);
+});
+
+// Swipe trên mobile
+(function initLightboxSwipe() {
+    let touchStartX = 0;
+    const lightbox = document.getElementById('lightbox');
+    if (!lightbox) return;
+    lightbox.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+    lightbox.addEventListener('touchend', e => {
+        const diff = e.changedTouches[0].clientX - touchStartX;
+        if (Math.abs(diff) > 50) changeLightboxImage(diff > 0 ? -1 : 1);
+    }, { passive: true });
+})();
 
 // ============================================
 // KHỞI TẠO
