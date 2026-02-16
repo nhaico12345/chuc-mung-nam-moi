@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="description" content="Chúc mừng năm mới - Gửi đến Hoàng Thị Anh Thơ">
     <title>💕 Chúc Mừng Năm Mới - Anh Thơ 💕</title>
 
@@ -57,8 +57,25 @@
     <!-- Nút nhạc -->
     <button class="music-btn" onclick="toggleMusic()" title="Bật/Tắt nhạc">🔇</button>
 
+    <!-- ========== MẬT MÃ SINH NHẬT ========== -->
+    <div class="passcode-screen" id="passcode-screen">
+        <div class="passcode-hearts"></div>
+        <div class="passcode-content">
+            <div class="passcode-icon">🔐</div>
+            <h2 class="passcode-title">Mật Mã Tình Yêu</h2>
+            <p class="passcode-question">Ngày sinh nhật của bảo bối là ngày nào?</p>
+            <p class="passcode-hint">Nhập theo định dạng DD/MM/YYYY</p>
+            <div class="passcode-input-wrapper">
+                <input type="text" id="passcode-input" class="passcode-input" placeholder="DD/MM/YYYY" maxlength="10"
+                    autocomplete="off" inputmode="numeric">
+                <div class="passcode-error" id="passcode-error">Sai rồi, thử lại nhé! 💔</div>
+            </div>
+            <button class="passcode-btn" onclick="checkPasscode()">💕 Xác Nhận 💕</button>
+        </div>
+    </div>
+
     <!-- ========== WELCOME SCREEN ========== -->
-    <div class="welcome-screen" id="welcome">
+    <div class="welcome-screen hidden" id="welcome">
         <div class="welcome-hearts"></div>
         <div class="welcome-content">
             <div class="welcome-envelope">💌</div>
@@ -68,146 +85,174 @@
         </div>
     </div>
 
-    <!-- ========== MAIN CONTENT ========== -->
+    <!-- ========== MAIN CONTENT (Pages) ========== -->
     <div class="main-content" id="main-content">
 
-        <!-- Countdown Section -->
-        <section class="section countdown-section" id="countdown-section">
-            <h2 class="countdown-label">Đếm Ngược Giao Thừa</h2>
-            <p class="countdown-year">✨ Tết Nguyên Đán 2026 ✨</p>
-
-            <div class="countdown-timer">
-                <div class="countdown-box">
-                    <div class="countdown-number" id="days">00</div>
-                    <div class="countdown-unit">Ngày</div>
-                </div>
-                <div class="countdown-box">
-                    <div class="countdown-number" id="hours">00</div>
-                    <div class="countdown-unit">Giờ</div>
-                </div>
-                <div class="countdown-box">
-                    <div class="countdown-number" id="minutes">00</div>
-                    <div class="countdown-unit">Phút</div>
-                </div>
-                <div class="countdown-box">
-                    <div class="countdown-number" id="seconds">00</div>
-                    <div class="countdown-unit">Giây</div>
-                </div>
-            </div>
-
-            <div class="countdown-complete">
-                <h2>🎉 Chúc Mừng Năm Mới! 🎉</h2>
-            </div>
-
-            <div class="scroll-indicator">
-                <span>Cuộn xuống</span>
-                <div class="scroll-arrow">↓</div>
-            </div>
-        </section>
-
-        <!-- Message Section -->
-        <section class="section message-section" id="message-section">
-            <div class="message-card">
-                <div class="message-to">Gửi đến</div>
-                <div class="message-name">Hoàng Thị Anh Thơ</div>
-                <div class="message-divider"></div>
-                <div class="message-text"></div>
-                <div class="message-signature">
-                    ~ Người Yêu Em Mãi 💕
-                </div>
-            </div>
-        </section>
-
-        <!-- Gallery Ảnh Kỷ Niệm -->
-        <section class="section gallery-section" id="gallery-section">
-            <h2 class="gallery-title">🖼️ Kỷ Niệm Của Chúng Ta</h2>
-            <p class="gallery-subtitle">Những khoảnh khắc đáng nhớ bên nhau ✨</p>
-
-            <div class="gallery-grid" id="gallery-grid">
-                <div class="gallery-item" onclick="openLightbox(0)">
-                    <img src="anh/z7538148079369_3b58fabb2458d542f45aefeebda582c7.jpg" alt="Kỷ niệm 1" loading="lazy">
-                    <div class="gallery-overlay"><span>💕</span></div>
-                </div>
-                <div class="gallery-item" onclick="openLightbox(1)">
-                    <img src="anh/z7538148093159_dacd11dcaad58e8e406992b324ca4f2f.jpg" alt="Kỷ niệm 2" loading="lazy">
-                    <div class="gallery-overlay"><span>💖</span></div>
-                </div>
-                <div class="gallery-item" onclick="openLightbox(2)">
-                    <img src="anh/z7538148094666_23071c33da61f65b1d9e2db02f653a92.jpg" alt="Kỷ niệm 3" loading="lazy">
-                    <div class="gallery-overlay"><span>💗</span></div>
-                </div>
-                <div class="gallery-item" onclick="openLightbox(3)">
-                    <img src="anh/z7538148096271_3e4d0bae9afa7e4f63c6d4238af9b7f6.jpg" alt="Kỷ niệm 4" loading="lazy">
-                    <div class="gallery-overlay"><span>✨</span></div>
-                </div>
-                <div class="gallery-item" onclick="openLightbox(4)">
-                    <img src="anh/z7538148098402_2769a9f1161dc0a42d9e278b22d51cbc.jpg" alt="Kỷ niệm 5" loading="lazy">
-                    <div class="gallery-overlay"><span>💝</span></div>
-                </div>
-                <div class="gallery-item" onclick="openLightbox(5)">
-                    <img src="anh/z7538148099395_4ae7117b33d731b95866a1bf7b777b2c.jpg" alt="Kỷ niệm 6" loading="lazy">
-                    <div class="gallery-overlay"><span>🌸</span></div>
-                </div>
-                <div class="gallery-item" onclick="openLightbox(6)">
-                    <img src="anh/z7538148099754_e8a7d114bfc8bbdf388bf294299ca603.jpg" alt="Kỷ niệm 7" loading="lazy">
-                    <div class="gallery-overlay"><span>💕</span></div>
-                </div>
-                <div class="gallery-item" onclick="openLightbox(7)">
-                    <img src="anh/z7538148103158_ba5320d36f22d72e295cfb8bd9cab7b6.jpg" alt="Kỷ niệm 8" loading="lazy">
-                    <div class="gallery-overlay"><span>💖</span></div>
-                </div>
-                <div class="gallery-item" onclick="openLightbox(8)">
-                    <img src="anh/z7538148108267_0cf240873128321c89c46a28f268666e.jpg" alt="Kỷ niệm 9" loading="lazy">
-                    <div class="gallery-overlay"><span>💗</span></div>
-                </div>
-                <div class="gallery-item" onclick="openLightbox(9)">
-                    <img src="anh/z7538148110785_51ea48c139aa8111b43dcb59c1f08972.jpg" alt="Kỷ niệm 10" loading="lazy">
-                    <div class="gallery-overlay"><span>✨</span></div>
-                </div>
-                <div class="gallery-item" onclick="openLightbox(10)">
-                    <img src="anh/z7538148121807_f9aaa722193a0105f902a313114fc49a.jpg" alt="Kỷ niệm 11" loading="lazy">
-                    <div class="gallery-overlay"><span>💝</span></div>
-                </div>
-                <div class="gallery-item" onclick="openLightbox(11)">
-                    <img src="anh/z7538148123540_7080aabd5aede31a0b3faf656633d788.jpg" alt="Kỷ niệm 12" loading="lazy">
-                    <div class="gallery-overlay"><span>🌸</span></div>
-                </div>
-                <div class="gallery-item" onclick="openLightbox(12)">
-                    <img src="anh/z7538148126717_a306674fd19fe2921ae5ab4fe4e695c3.jpg" alt="Kỷ niệm 13" loading="lazy">
-                    <div class="gallery-overlay"><span>💕</span></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Lightbox Overlay -->
-        <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
-            <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
-            <button class="lightbox-nav lightbox-prev" onclick="changeLightboxImage(-1, event)">&#10094;</button>
-            <div class="lightbox-content">
-                <img id="lightbox-img" src="" alt="Kỷ niệm">
-                <div class="lightbox-counter" id="lightbox-counter"></div>
-            </div>
-            <button class="lightbox-nav lightbox-next" onclick="changeLightboxImage(1, event)">&#10095;</button>
+        <!-- Page Navigation -->
+        <div class="page-nav" id="page-nav">
+            <button class="page-nav-btn page-prev" onclick="changePage(-1)">‹</button>
+            <div class="page-dots" id="page-dots"></div>
+            <button class="page-nav-btn page-next" onclick="changePage(1)">›</button>
         </div>
 
-        <!-- Gift Section -->
-        <section class="section gift-section" id="gift-section">
-            <h2 class="gift-title">Một Món Quà Nhỏ</h2>
-            <p class="gift-subtitle">Nhấn vào hộp quà để mở nhé 🎁</p>
+        <!-- PAGE 1: Countdown -->
+        <div class="page active" id="page-0">
+            <div class="page-inner">
+                <h2 class="countdown-label">Đếm Ngược Giao Thừa</h2>
+                <p class="countdown-year">✨ Tết Nguyên Đán 2026 ✨</p>
 
-            <div class="gift-box-wrapper" onclick="openGift()">
-                <div class="gift-box">
-                    <div class="gift-box-lid"></div>
-                    <div class="gift-box-body"></div>
+                <div class="countdown-timer">
+                    <div class="countdown-box">
+                        <div class="countdown-number" id="days">00</div>
+                        <div class="countdown-unit">Ngày</div>
+                    </div>
+                    <div class="countdown-box">
+                        <div class="countdown-number" id="hours">00</div>
+                        <div class="countdown-unit">Giờ</div>
+                    </div>
+                    <div class="countdown-box">
+                        <div class="countdown-number" id="minutes">00</div>
+                        <div class="countdown-unit">Phút</div>
+                    </div>
+                    <div class="countdown-box">
+                        <div class="countdown-number" id="seconds">00</div>
+                        <div class="countdown-unit">Giây</div>
+                    </div>
+                </div>
+
+                <div class="countdown-complete">
+                    <h2>🎉 Chúc Mừng Năm Mới! 🎉</h2>
+                </div>
+
+                <div class="page-hint">
+                    <span>Vuốt hoặc nhấn → để sang trang</span>
+                    <div class="page-hint-arrow">→</div>
                 </div>
             </div>
+        </div>
 
-            <div class="gift-message">
-                <div class="gift-message-text">Mãi Yêu Em 💕</div>
-                <div class="gift-hearts">💕 💖 💗 💝 💕</div>
+        <!-- PAGE 2: Lời Chúc -->
+        <div class="page" id="page-1">
+            <div class="page-inner">
+                <div class="message-card">
+                    <div class="message-to">Gửi đến</div>
+                    <div class="message-name">Hoàng Thị Anh Thơ</div>
+                    <div class="message-divider"></div>
+                    <div class="message-text"></div>
+                    <div class="message-signature">
+                        ~ Người Yêu Em Mãi 💕
+                    </div>
+                </div>
             </div>
-        </section>
+        </div>
 
+        <!-- PAGE 3: Gallery Ảnh Polaroid -->
+        <div class="page" id="page-2">
+            <div class="page-inner gallery-page-inner">
+                <h2 class="gallery-title">🖼️ Kỷ Niệm Của Chúng Ta</h2>
+                <p class="gallery-subtitle">Những khoảnh khắc đáng nhớ bên nhau ✨</p>
+
+                <div class="polaroid-gallery" id="polaroid-gallery">
+                    <div class="polaroid" onclick="openLightbox(0)" style="--rotate: -3deg">
+                        <div class="polaroid-photo"><img src="anh/z7538148079369_3b58fabb2458d542f45aefeebda582c7.jpg"
+                                alt="Kỷ niệm 1" loading="lazy"></div>
+                        <div class="polaroid-caption">💕 Kỷ niệm</div>
+                    </div>
+                    <div class="polaroid" onclick="openLightbox(1)" style="--rotate: 2deg">
+                        <div class="polaroid-photo"><img src="anh/z7538148093159_dacd11dcaad58e8e406992b324ca4f2f.jpg"
+                                alt="Kỷ niệm 2" loading="lazy"></div>
+                        <div class="polaroid-caption">💖 Yêu thương</div>
+                    </div>
+                    <div class="polaroid" onclick="openLightbox(2)" style="--rotate: -1deg">
+                        <div class="polaroid-photo"><img src="anh/z7538148094666_23071c33da61f65b1d9e2db02f653a92.jpg"
+                                alt="Kỷ niệm 3" loading="lazy"></div>
+                        <div class="polaroid-caption">✨ Hạnh phúc</div>
+                    </div>
+                    <div class="polaroid" onclick="openLightbox(3)" style="--rotate: 4deg">
+                        <div class="polaroid-photo"><img src="anh/z7538148096271_3e4d0bae9afa7e4f63c6d4238af9b7f6.jpg"
+                                alt="Kỷ niệm 4" loading="lazy"></div>
+                        <div class="polaroid-caption">🌸 Bên nhau</div>
+                    </div>
+                    <div class="polaroid" onclick="openLightbox(4)" style="--rotate: -2deg">
+                        <div class="polaroid-photo"><img src="anh/z7538148098402_2769a9f1161dc0a42d9e278b22d51cbc.jpg"
+                                alt="Kỷ niệm 5" loading="lazy"></div>
+                        <div class="polaroid-caption">� Ngọt ngào</div>
+                    </div>
+                    <div class="polaroid" onclick="openLightbox(5)" style="--rotate: 3deg">
+                        <div class="polaroid-photo"><img src="anh/z7538148099395_4ae7117b33d731b95866a1bf7b777b2c.jpg"
+                                alt="Kỷ niệm 6" loading="lazy"></div>
+                        <div class="polaroid-caption">💝 Mãi mãi</div>
+                    </div>
+                    <div class="polaroid" onclick="openLightbox(6)" style="--rotate: -4deg">
+                        <div class="polaroid-photo"><img src="anh/z7538148099754_e8a7d114bfc8bbdf388bf294299ca603.jpg"
+                                alt="Kỷ niệm 7" loading="lazy"></div>
+                        <div class="polaroid-caption">💕 Thương</div>
+                    </div>
+                    <div class="polaroid" onclick="openLightbox(7)" style="--rotate: 1deg">
+                        <div class="polaroid-photo"><img src="anh/z7538148103158_ba5320d36f22d72e295cfb8bd9cab7b6.jpg"
+                                alt="Kỷ niệm 8" loading="lazy"></div>
+                        <div class="polaroid-caption">💖 Nhớ mãi</div>
+                    </div>
+                    <div class="polaroid" onclick="openLightbox(8)" style="--rotate: -3deg">
+                        <div class="polaroid-photo"><img src="anh/z7538148108267_0cf240873128321c89c46a28f268666e.jpg"
+                                alt="Kỷ niệm 9" loading="lazy"></div>
+                        <div class="polaroid-caption">✨ Đẹp quá</div>
+                    </div>
+                    <div class="polaroid" onclick="openLightbox(9)" style="--rotate: 2deg">
+                        <div class="polaroid-photo"><img src="anh/z7538148110785_51ea48c139aa8111b43dcb59c1f08972.jpg"
+                                alt="Kỷ niệm 10" loading="lazy"></div>
+                        <div class="polaroid-caption">🌸 Cùng nhau</div>
+                    </div>
+                    <div class="polaroid" onclick="openLightbox(10)" style="--rotate: -1deg">
+                        <div class="polaroid-photo"><img src="anh/z7538148121807_f9aaa722193a0105f902a313114fc49a.jpg"
+                                alt="Kỷ niệm 11" loading="lazy"></div>
+                        <div class="polaroid-caption">� Trọn vẹn</div>
+                    </div>
+                    <div class="polaroid" onclick="openLightbox(11)" style="--rotate: 3deg">
+                        <div class="polaroid-photo"><img src="anh/z7538148123540_7080aabd5aede31a0b3faf656633d788.jpg"
+                                alt="Kỷ niệm 12" loading="lazy"></div>
+                        <div class="polaroid-caption">💝 Yêu Em</div>
+                    </div>
+                    <div class="polaroid" onclick="openLightbox(12)" style="--rotate: -2deg">
+                        <div class="polaroid-photo"><img src="anh/z7538148126717_a306674fd19fe2921ae5ab4fe4e695c3.jpg"
+                                alt="Kỷ niệm 13" loading="lazy"></div>
+                        <div class="polaroid-caption">💕 Mãi yêu</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 4: Gift Box -->
+        <div class="page" id="page-3">
+            <div class="page-inner">
+                <h2 class="gift-title">Một Món Quà Nhỏ</h2>
+                <p class="gift-subtitle">Nhấn vào hộp quà để mở nhé 🎁</p>
+
+                <div class="gift-box-wrapper" onclick="openGift()">
+                    <div class="gift-box">
+                        <div class="gift-box-lid"></div>
+                        <div class="gift-box-body"></div>
+                    </div>
+                </div>
+
+                <div class="gift-message">
+                    <div class="gift-message-text">Mãi Yêu Em 💕</div>
+                    <div class="gift-hearts">💕 💖 💗 💝 💕</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Lightbox Overlay -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+        <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+        <button class="lightbox-nav lightbox-prev" onclick="changeLightboxImage(-1, event)">&#10094;</button>
+        <div class="lightbox-content">
+            <img id="lightbox-img" src="" alt="Kỷ niệm">
+            <div class="lightbox-counter" id="lightbox-counter"></div>
+        </div>
+        <button class="lightbox-nav lightbox-next" onclick="changeLightboxImage(1, event)">&#10095;</button>
     </div>
 
     <script src="script.js"></script>
