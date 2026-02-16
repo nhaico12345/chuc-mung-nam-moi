@@ -612,13 +612,15 @@ function startParticleText() {
     temp.width = ptCanvas.width;
     temp.height = ptCanvas.height;
 
-    let fs = Math.min(ptCanvas.width / 6, 150);
-    tCtx.font = `bold ${fs}px 'Great Vibes', 'Quicksand', sans-serif`;
+    // Dùng Quicksand (sans-serif) thay cursive vì cursive bị cut swash trên canvas
+    let fs = IS_MOBILE ? 36 : Math.min(ptCanvas.width / 7, 120);
+    tCtx.font = `bold ${fs}px 'Quicksand', sans-serif`;
 
-    while (tCtx.measureText(LOVER_NAME).width > ptCanvas.width * 0.9) {
+    // Giảm font cho đến khi vừa 75% chiều rộng (chừa margin rộng)
+    while (tCtx.measureText(LOVER_NAME).width > ptCanvas.width * 0.75) {
         fs -= 2;
-        tCtx.font = `bold ${fs}px 'Great Vibes', 'Quicksand', sans-serif`;
-        if (fs < 20) break;
+        tCtx.font = `bold ${fs}px 'Quicksand', sans-serif`;
+        if (fs < 18) break;
     }
 
     tCtx.fillStyle = '#fff';

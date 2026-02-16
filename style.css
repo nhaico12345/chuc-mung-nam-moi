@@ -634,7 +634,7 @@ body {
     width: 100%;
     height: 100%;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     opacity: 0;
     visibility: hidden;
@@ -642,6 +642,7 @@ body {
     pointer-events: none;
     overflow-y: auto;
     overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
 }
 
 .page.active {
@@ -685,12 +686,14 @@ body {
     justify-content: center;
     min-height: 100vh;
     padding: 60px 20px;
+    margin: 0 auto;
 }
 
 .gallery-page-inner {
     justify-content: flex-start;
-    padding-top: 30px;
-    padding-bottom: 100px;
+    min-height: auto;
+    padding-top: 60px;
+    padding-bottom: 120px;
 }
 
 /* ========== PAGE NAVIGATION ========== */
