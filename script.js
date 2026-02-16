@@ -212,10 +212,30 @@ function initWelcome() {
     }
 }
 
-function openLetter() {
+let envelopeOpened = false;
+
+function openEnvelope() {
+    if (envelopeOpened) return;
+    envelopeOpened = true;
+
     // SFX: Xé giấy / mở phong bì
     playSfxEnvelope();
 
+    // Mở nắp phong bì + rút thư lên
+    const envelope = document.getElementById('envelope-3d');
+    if (envelope) {
+        envelope.classList.add('opened');
+        // Dừng animation float
+        envelope.style.animation = 'none';
+    }
+
+    // Sau khi animation phong bì xong → chuyển cảnh
+    setTimeout(() => {
+        openLetter();
+    }, 2000);
+}
+
+function openLetter() {
     const welcome = document.getElementById('welcome');
     if (welcome) welcome.classList.add('hidden');
 

@@ -83,10 +83,23 @@
     <div class="welcome-screen hidden" id="welcome">
         <div class="welcome-hearts"></div>
         <div class="welcome-content">
-            <div class="welcome-envelope">💌</div>
-            <h1 class="welcome-title">Gửi Em Yêu...</h1>
+            <h1 class="welcome-title gradient-text-animated">Gửi Em Yêu...</h1>
             <p class="welcome-subtitle">Anh có một điều muốn nói với Em</p>
-            <button class="open-btn" onclick="openLetter()">💕 Mở Thư Tình 💕</button>
+
+            <!-- Phong bì 3D -->
+            <div class="envelope-3d" id="envelope-3d" onclick="openEnvelope()">
+                <div class="envelope-flap"></div>
+                <div class="envelope-body">
+                    <div class="envelope-letter" id="envelope-letter">
+                        <div class="letter-content">
+                            <span class="letter-heart">💕</span>
+                            <span class="letter-text">Mở Thư Tình</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="envelope-shadow"></div>
+            </div>
+            <p class="envelope-cta">Nhấn vào phong bì để mở 💌</p>
         </div>
     </div>
 

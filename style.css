@@ -521,25 +521,6 @@ body {
     }
 }
 
-.welcome-envelope {
-    font-size: 80px;
-    margin-bottom: 30px;
-    animation: envelopeBounce 2s ease-in-out infinite;
-    filter: drop-shadow(0 0 30px rgba(255, 107, 157, 0.5));
-}
-
-@keyframes envelopeBounce {
-
-    0%,
-    100% {
-        transform: translateY(0) rotate(-5deg);
-    }
-
-    50% {
-        transform: translateY(-15px) rotate(5deg);
-    }
-}
-
 .welcome-title {
     font-family: 'Great Vibes', cursive;
     font-size: 3.5rem;
@@ -551,51 +532,194 @@ body {
 .welcome-subtitle {
     font-size: 1.1rem;
     color: var(--text-soft);
-    margin-bottom: 40px;
+    margin-bottom: 35px;
     font-weight: 300;
     letter-spacing: 1px;
 }
 
-.open-btn {
-    padding: 16px 50px;
-    font-family: 'Quicksand', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--white);
-    background: linear-gradient(135deg, var(--pink), #e0446e);
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
+/* ========== PHONG BÌ 3D ========== */
+.envelope-3d {
+    width: 260px;
+    height: 180px;
     position: relative;
-    overflow: hidden;
-    transition: all 0.4s ease;
-    box-shadow: 0 8px 32px rgba(255, 107, 157, 0.4);
-    letter-spacing: 1px;
+    cursor: pointer;
+    margin: 0 auto 20px;
+    perspective: 800px;
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease;
+    animation: envelopeFloat 3s ease-in-out infinite;
 }
 
-.open-btn:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 12px 45px rgba(255, 107, 157, 0.6);
+.envelope-3d:hover {
+    transform: scale(1.05) translateY(-5px);
 }
 
-.open-btn::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.15) 50%, transparent 70%);
-    animation: shimmer 3s ease-in-out infinite;
-}
+@keyframes envelopeFloat {
 
-@keyframes shimmer {
-    0% {
-        transform: translateX(-100%) rotate(45deg);
+    0%,
+    100% {
+        transform: translateY(0);
     }
 
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Thân phong bì */
+.envelope-body {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(145deg, #e83e6c 0%, #c82854 40%, #a01e44 100%);
+    border-radius: 0 0 8px 8px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(232, 62, 108, 0.4), 0 4px 15px rgba(0, 0, 0, 0.3);
+    z-index: 1;
+}
+
+/* Tam giác trang trí trên thân */
+.envelope-body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-left: 130px solid rgba(255, 255, 255, 0.08);
+    border-right: 130px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 90px solid transparent;
+}
+
+/* Viền vàng trang trí */
+.envelope-body::after {
+    content: '';
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0.5;
+}
+
+/* Nắp phong bì (tam giác) */
+.envelope-flap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-left: 130px solid transparent;
+    border-right: 130px solid transparent;
+    border-top: 100px solid #d43060;
+    z-index: 3;
+    transform-origin: top center;
+    transition: transform 1s cubic-bezier(0.23, 1, 0.32, 1);
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.2));
+}
+
+/* Nắp mở */
+.envelope-3d.opened .envelope-flap {
+    transform: rotateX(180deg);
+    z-index: 0;
+}
+
+/* Nắp sau khi mở → đổi màu vì lộ mặt sau */
+.envelope-flap::after {
+    content: '';
+    position: absolute;
+    top: -100px;
+    left: -130px;
+    width: 0;
+    height: 0;
+    border-left: 130px solid transparent;
+    border-right: 130px solid transparent;
+    border-top: 100px solid #b82550;
+}
+
+/* Lá thư bên trong */
+.envelope-letter {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 85%;
+    height: 80%;
+    background: linear-gradient(180deg, #fff 0%, #fef0f5 100%);
+    border-radius: 6px 6px 4px 4px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 2;
+    transition: transform 1.2s cubic-bezier(0.23, 1, 0.32, 1) 0.4s,
+        box-shadow 0.8s ease 0.4s;
+    overflow: hidden;
+}
+
+/* Lá thư rút lên */
+.envelope-3d.opened .envelope-letter {
+    transform: translateX(-50%) translateY(-120%);
+    box-shadow: 0 15px 40px rgba(255, 107, 157, 0.4), 0 5px 20px rgba(0, 0, 0, 0.2);
+}
+
+.letter-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 15px;
+}
+
+.letter-heart {
+    font-size: 28px;
+    margin-bottom: 6px;
+    animation: heartBeat 1.5s ease-in-out infinite;
+}
+
+.letter-text {
+    font-family: 'Great Vibes', cursive;
+    font-size: 1.2rem;
+    color: var(--pink);
+    text-align: center;
+}
+
+/* Bóng phong bì */
+.envelope-shadow {
+    position: absolute;
+    bottom: -15px;
+    left: 10%;
+    width: 80%;
+    height: 12px;
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.25) 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: 0;
+    transition: all 0.3s ease;
+}
+
+.envelope-3d:hover .envelope-shadow {
+    width: 90%;
+    left: 5%;
+    opacity: 0.7;
+}
+
+/* Text gợi ý nhấn */
+.envelope-cta {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 10px;
+    animation: ctaPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes ctaPulse {
+
+    0%,
     100% {
-        transform: translateX(100%) rotate(45deg);
+        opacity: 0.4;
+    }
+
+    50% {
+        opacity: 0.8;
     }
 }
 
@@ -1511,8 +1635,29 @@ html.mobile .gift-box-wrapper {
     filter: none;
 }
 
-html.mobile .open-btn::after {
-    animation: none;
+html.mobile .envelope-3d {
+    width: 220px;
+    height: 150px;
+}
+
+html.mobile .envelope-flap {
+    border-left-width: 110px;
+    border-right-width: 110px;
+    border-top-width: 85px;
+}
+
+html.mobile .envelope-flap::after {
+    left: -110px;
+    top: -85px;
+    border-left-width: 110px;
+    border-right-width: 110px;
+    border-top-width: 85px;
+}
+
+html.mobile .envelope-body::before {
+    border-left-width: 110px;
+    border-right-width: 110px;
+    border-bottom-width: 75px;
 }
 
 /* ========== ANIMATED GRADIENT TEXT ========== */
@@ -1667,8 +1812,9 @@ html.mobile .open-btn::after {
         font-size: 2.5rem;
     }
 
-    .welcome-envelope {
-        font-size: 60px;
+    .envelope-3d {
+        width: 200px;
+        height: 140px;
     }
 
     .countdown-label {
