@@ -1011,6 +1011,7 @@ body {
     max-width: 850px;
     margin: 0 auto;
     padding: 0 15px;
+    perspective: 1000px;
 }
 
 .polaroid {
@@ -1019,10 +1020,12 @@ body {
     border-radius: 4px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.2);
     cursor: pointer;
-    transition: all 0.4s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     transform: rotate(var(--rotate, 0deg));
+    transform-style: preserve-3d;
     position: relative;
     animation: polaroidIn 0.8s ease backwards;
+    will-change: transform;
 }
 
 .polaroid:nth-child(1) {
@@ -1510,6 +1513,152 @@ html.mobile .gift-box-wrapper {
 
 html.mobile .open-btn::after {
     animation: none;
+}
+
+/* ========== ANIMATED GRADIENT TEXT ========== */
+.gradient-text-animated {
+    background: linear-gradient(90deg,
+            var(--gold) 0%,
+            var(--pink) 25%,
+            var(--gold-light) 50%,
+            var(--pink-light) 75%,
+            var(--gold) 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientShimmer 4s linear infinite;
+    position: relative;
+}
+
+.gradient-text-animated::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.3) 50%,
+            transparent 100%);
+    animation: textShine 5s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes gradientShimmer {
+    0% {
+        background-position: 0% center;
+    }
+
+    100% {
+        background-position: 200% center;
+    }
+}
+
+@keyframes textShine {
+
+    0%,
+    100% {
+        left: -100%;
+    }
+
+    50% {
+        left: 150%;
+    }
+}
+
+/* ========== HEART TRANSITION ========== */
+.heart-transition {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 53;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.heart-transition.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: all;
+}
+
+.heart-transition-icon {
+    font-size: 40px;
+    transform: scale(0);
+    transition: none;
+}
+
+.heart-transition.active .heart-transition-icon {
+    animation: heartExpand 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes heartExpand {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+        filter: drop-shadow(0 0 20px rgba(255, 107, 157, 0.8));
+    }
+
+    40% {
+        transform: scale(8);
+        opacity: 1;
+        filter: drop-shadow(0 0 60px rgba(255, 107, 157, 0.6));
+    }
+
+    70% {
+        transform: scale(30);
+        opacity: 0.8;
+        filter: drop-shadow(0 0 100px rgba(255, 107, 157, 0.4));
+    }
+
+    100% {
+        transform: scale(80);
+        opacity: 0;
+        filter: drop-shadow(0 0 0px transparent);
+    }
+}
+
+/* ========== POLAROID 3D SHINE ========== */
+.polaroid::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.08) 40%,
+            rgba(255, 255, 255, 0.15) 50%,
+            rgba(255, 255, 255, 0.08) 60%,
+            transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    border-radius: 4px;
+}
+
+.polaroid:hover::after {
+    opacity: 1;
+}
+
+/* ========== CHINESE QUOTE STYLE ========== */
+.message-chinese-quote {
+    font-style: italic;
+    color: var(--pink-light);
+    font-size: 0.95rem;
+    opacity: 0.9;
+    display: block;
+    margin-top: 5px;
+    letter-spacing: 1px;
 }
 
 /* ========== RESPONSIVE ========== */

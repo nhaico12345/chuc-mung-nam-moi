@@ -19,7 +19,7 @@ const PERF = IS_MOBILE ? {
 // ---- CẤU HÌNH NỘI DUNG ----
 const NEW_YEAR_DATE = new Date('2026-02-17T00:00:00+07:00');
 const LOVER_NAME = 'Hoàng Thị Anh Thơ';
-const MESSAGE_TEXT = 'Chúc mừng năm mới, Cô Gái nhỏ của anh..!\n\nChúc cho chúng ta năm mới luôn ngập tràn yêu thương, bình yên và những kỉ niệm đẹp mãi không quên.\n\nChúng ta có được nhau là duyên trời, hãy trân trọng tình yêu này mãi Em nhé!\n\nChúc mừng năm mới, bảo bối của đời Anh.\n\nChúc Em mạnh khỏe bình an và luôn nở nụ cười trong những năm mới nữa Em yêu nhé..!\n\n\"Mãi Yêu Em\" 💕';
+const MESSAGE_TEXT = 'Chúc mừng năm mới, Cô Gái nhỏ của anh..!\n\nChúc cho chúng ta năm mới luôn ngập tràn yêu thương, bình yên và những kỉ niệm đẹp mãi không quên.\n\nChúng ta có được nhau là duyên trời, hãy trân trọng tình yêu này mãi Em nhé!\n\nChúc mừng năm mới, bảo bối của đời Anh.\n\nChúc Em mạnh khỏe bình an và luôn nở nụ cười trong những năm mới nữa Em yêu nhé..!\n\n"我爱你，不是因为你是一个怎样的人，\n而是因为我喜欢与你在一起时的感觉" 💕\n\n\"Mãi Yêu Em\" 💕';
 const BIRTHDAY_PASSCODE = '13/05/2006';
 
 // ---- GLOBAL STATE ----
@@ -28,6 +28,93 @@ let musicPlaying = false;
 let audioElement = null;
 let currentPage = 0;
 const totalPages = 4;
+let audioCtx = null;
+
+// ============================================
+// SFX - ÂM THANH TƯƠNG TÁC (Web Audio API)
+// ============================================
+function getAudioCtx() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+}
+
+// Tiếng "Ting!" trong trẻo khi nhập đúng pass
+function playSfxTing() {
+    try {
+        const ctx = getAudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1200, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(2400, ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.6);
+        // Thêm harmonic
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(1800, ctx.currentTime + 0.05);
+        osc2.frequency.exponentialRampToValueAtTime(3600, ctx.currentTime + 0.15);
+        gain2.gain.setValueAtTime(0.15, ctx.currentTime + 0.05);
+        gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+        osc2.start(ctx.currentTime + 0.05);
+        osc2.stop(ctx.currentTime + 0.5);
+    } catch (e) { }
+}
+
+// Tiếng xé giấy / mở phong bì
+function playSfxEnvelope() {
+    try {
+        const ctx = getAudioCtx();
+        const bufferSize = ctx.sampleRate * 0.4;
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 2);
+        }
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'highpass';
+        filter.frequency.setValueAtTime(2000, ctx.currentTime);
+        filter.frequency.linearRampToValueAtTime(6000, ctx.currentTime + 0.2);
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+        source.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        source.start(ctx.currentTime);
+    } catch (e) { }
+}
+
+// Tiếng pop nhỏ khi pháo hoa nổ
+function playSfxPop() {
+    try {
+        const ctx = getAudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        const baseFreq = 200 + Math.random() * 300;
+        osc.frequency.setValueAtTime(baseFreq, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.15);
+    } catch (e) { }
+}
 
 // ============================================
 // 1. MẬT MÃ SINH NHẬT
@@ -73,16 +160,29 @@ function checkPasscode() {
     if (!input) return;
 
     if (input.value.trim() === BIRTHDAY_PASSCODE) {
-        // Đúng mật mã!
-        const screen = document.getElementById('passcode-screen');
-        if (screen) screen.classList.add('hidden');
+        // SFX: Ting!
+        playSfxTing();
 
-        // Hiện welcome screen
-        const welcome = document.getElementById('welcome');
-        if (welcome) welcome.classList.remove('hidden');
+        // Heart transition: trái tim phóng to lấp đầy màn hình
+        const heartOverlay = document.getElementById('heart-transition');
+        if (heartOverlay) heartOverlay.classList.add('active');
+
+        // Sau 0.8s: ẩn passcode, hiện welcome
+        setTimeout(() => {
+            const screen = document.getElementById('passcode-screen');
+            if (screen) screen.classList.add('hidden');
+
+            const welcome = document.getElementById('welcome');
+            if (welcome) welcome.classList.remove('hidden');
+        }, 800);
+
+        // Sau 1.8s: ẩn heart overlay
+        setTimeout(() => {
+            if (heartOverlay) heartOverlay.classList.remove('active');
+        }, 1800);
 
         // Particle text
-        setTimeout(startParticleText, 500);
+        setTimeout(startParticleText, 1000);
     } else {
         // Sai
         input.classList.add('shake');
@@ -113,6 +213,9 @@ function initWelcome() {
 }
 
 function openLetter() {
+    // SFX: Xé giấy / mở phong bì
+    playSfxEnvelope();
+
     const welcome = document.getElementById('welcome');
     if (welcome) welcome.classList.add('hidden');
 
@@ -227,6 +330,7 @@ function isOverlayActive() {
 
 function explodeAt(x, y) {
     if (!ctx) return;
+    playSfxPop(); // SFX: pop lách tách
     const type = Math.random();
     const count = IS_MOBILE ? 30 + Math.floor(Math.random() * 20) : 60 + Math.floor(Math.random() * 40);
     const palette = [
@@ -976,6 +1080,46 @@ document.addEventListener('keydown', e => {
 })();
 
 // ============================================
+// 21. 3D TILT CHO POLAROID
+// ============================================
+function initPolaroidTilt() {
+    if (IS_MOBILE) return; // Chỉ trên PC
+    const gallery = document.getElementById('polaroid-gallery');
+    if (!gallery) return;
+
+    gallery.addEventListener('mousemove', (e) => {
+        const cards = gallery.querySelectorAll('.polaroid');
+        cards.forEach(card => {
+            const rect = card.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            const mouseX = e.clientX - centerX;
+            const mouseY = e.clientY - centerY;
+            const dist = Math.sqrt(mouseX * mouseX + mouseY * mouseY);
+
+            // Chỉ tilt nếu chuột gần card (< 250px)
+            if (dist < 250) {
+                const rotateY = (mouseX / rect.width) * 15; // max 15 degree
+                const rotateX = -(mouseY / rect.height) * 15;
+                const intensity = 1 - Math.min(dist / 250, 1);
+                card.style.transform = `perspective(600px) rotateX(${rotateX * intensity}deg) rotateY(${rotateY * intensity}deg) scale(${1 + intensity * 0.05})`;
+                card.style.boxShadow = `${-rotateY * 0.5}px ${rotateX * 0.5}px 30px rgba(255, 107, 157, ${0.15 + intensity * 0.2}), 0 5px 15px rgba(0,0,0,0.3)`;
+            } else {
+                card.style.transform = `rotate(${getComputedStyle(card).getPropertyValue('--rotate') || '0deg'})`;
+                card.style.boxShadow = '';
+            }
+        });
+    });
+
+    gallery.addEventListener('mouseleave', () => {
+        gallery.querySelectorAll('.polaroid').forEach(card => {
+            card.style.transform = `rotate(${getComputedStyle(card).getPropertyValue('--rotate') || '0deg'})`;
+            card.style.boxShadow = '';
+        });
+    });
+}
+
+// ============================================
 // KHỞI TẠO
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
@@ -984,4 +1128,5 @@ document.addEventListener('DOMContentLoaded', () => {
     initStarfield();
     checkVideo();
     initShakeDetection();
+    initPolaroidTilt();
 });
