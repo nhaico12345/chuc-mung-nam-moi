@@ -19,7 +19,7 @@ const PERF = IS_MOBILE ? {
 // ---- CẤU HÌNH NỘI DUNG ----
 const NEW_YEAR_DATE = new Date('2026-02-17T00:00:00+07:00');
 const LOVER_NAME = 'Hoàng Thị Anh Thơ';
-const MESSAGE_TEXT = 'Chúc mừng năm mới, Cô Gái nhỏ của anh..!\n\nChúc cho chúng ta năm mới luôn ngập tràn yêu thương, bình yên và những kỉ niệm đẹp mãi không quên.\n\nChúng ta có được nhau là duyên trời, hãy trân trọng tình yêu này mãi Em nhé!\n\nChúc mừng năm mới, tình yêu của đời Anh.\n\nChúc Em mạnh khỏe bình an và luôn nở nụ cười như những năm mới nữa Em yêu nhé..!\n\n\"Mãi Yêu Em\" 💕';
+const MESSAGE_TEXT = 'Chúc mừng năm mới, Cô Gái nhỏ của anh..!\n\nChúc cho chúng ta năm mới luôn ngập tràn yêu thương, bình yên và những kỉ niệm đẹp mãi không quên.\n\nChúng ta có được nhau là duyên trời, hãy trân trọng tình yêu này mãi Em nhé!\n\nChúc mừng năm mới, bảo bối của đời Anh.\n\nChúc Em mạnh khỏe bình an và luôn nở nụ cười trong những năm mới nữa Em yêu nhé..!\n\n\"Mãi Yêu Em\" 💕';
 const BIRTHDAY_PASSCODE = '13/05/2006';
 
 // ---- GLOBAL STATE ----
@@ -612,21 +612,23 @@ function startParticleText() {
     temp.width = ptCanvas.width;
     temp.height = ptCanvas.height;
 
-    // Dùng Quicksand (sans-serif) thay cursive vì cursive bị cut swash trên canvas
-    let fs = IS_MOBILE ? 36 : Math.min(ptCanvas.width / 7, 120);
-    tCtx.font = `bold ${fs}px 'Quicksand', sans-serif`;
+    // Dùng Great Vibes cho đẹp, nhưng xử lý kỹ sai số đo
+    let fs = Math.min(ptCanvas.width / 6, 100);
+    tCtx.font = `bold ${fs}px 'Great Vibes', 'Quicksand', sans-serif`;
 
-    // Giảm font cho đến khi vừa 75% chiều rộng (chừa margin rộng)
-    while (tCtx.measureText(LOVER_NAME).width > ptCanvas.width * 0.75) {
+    // Giảm font cho đến khi vừa 70% chiều rộng để chừa chỗ cho nét uốn lượn
+    while (tCtx.measureText(LOVER_NAME).width > ptCanvas.width * 0.7) {
         fs -= 2;
-        tCtx.font = `bold ${fs}px 'Quicksand', sans-serif`;
-        if (fs < 18) break;
+        tCtx.font = `bold ${fs}px 'Great Vibes', 'Quicksand', sans-serif`;
+        if (fs < 20) break;
     }
 
     tCtx.fillStyle = '#fff';
     tCtx.textAlign = 'center';
     tCtx.textBaseline = 'middle';
-    tCtx.fillText(LOVER_NAME, temp.width / 2, temp.height / 2);
+
+    // Vẽ chữ thấp xuống một chút (offset y + 15) để tránh mất dấu mũ/nét trên
+    tCtx.fillText(LOVER_NAME, temp.width / 2, temp.height / 2 + 15);
 
     const imageData = tCtx.getImageData(0, 0, temp.width, temp.height);
     const positions = [];
