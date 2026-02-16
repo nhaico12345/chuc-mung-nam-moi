@@ -787,24 +787,31 @@ function changePage(direction) {
 function goToPage(pageIndex) {
     if (pageIndex === currentPage || pageIndex < 0 || pageIndex >= totalPages) return;
 
-    const oldPage = document.getElementById('page-' + currentPage);
-    const newPage = document.getElementById('page-' + pageIndex);
+    const goingForward = pageIndex > currentPage;
+    const allPages = document.querySelectorAll('.page');
 
-    if (oldPage) {
-        oldPage.classList.remove('active');
-        oldPage.classList.add(pageIndex > currentPage ? 'prev' : '');
-        // Reset class sau animation
-        setTimeout(() => oldPage.classList.remove('prev'), 800);
+    // Dọn sạch class cũ cho TẤT CẢ pages
+    allPages.forEach(p => {
+        p.classList.remove('active', 'slide-out-left', 'slide-out-right', 'enter-from-left', 'enter-from-right');
+    });
+
+    const oldPageEl = document.getElementById('page-' + currentPage);
+    const newPageEl = document.getElementById('page-' + pageIndex);
+
+    // Trang cũ trượt ra
+    if (oldPageEl) {
+        oldPageEl.classList.add(goingForward ? 'slide-out-left' : 'slide-out-right');
     }
 
-    // Reset transform cho page mới
-    if (newPage) {
-        // Nếu đi tới, page mới từ phải sang; đi lùi, page mới từ trái sang
-        newPage.style.transition = 'none';
-        newPage.style.transform = pageIndex > currentPage ? 'translateX(100%)' : 'translateX(-100%)';
-        newPage.offsetHeight; // Force reflow
-        newPage.style.transition = '';
-        newPage.classList.add('active');
+    // Trang mới: đặt vị trí bắt đầu (không transition), rồi animate vào
+    if (newPageEl) {
+        // Bước 1: đặt vô vị trí bên phải (đi tới) hoặc bên trái (đi lùi)
+        newPageEl.classList.add(goingForward ? 'enter-from-right' : 'enter-from-left');
+        newPageEl.offsetHeight; // Force reflow
+
+        // Bước 2: thêm active → transition sẽ animate từ vị trí enter → translateX(0)
+        newPageEl.classList.remove('enter-from-right', 'enter-from-left');
+        newPageEl.classList.add('active');
     }
 
     currentPage = pageIndex;
@@ -812,6 +819,13 @@ function goToPage(pageIndex) {
 
     // Trigger typing khi sang trang lời chúc
     if (pageIndex === 1) setTimeout(startTyping, 500);
+
+    // Cleanup: dọn class slide-out sau khi animation xong
+    setTimeout(() => {
+        if (oldPageEl) {
+            oldPageEl.classList.remove('slide-out-left', 'slide-out-right');
+        }
+    }, 800);
 }
 
 function updateDots() {

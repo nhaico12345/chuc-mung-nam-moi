@@ -637,8 +637,8 @@ body {
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transform: translateX(100%);
-    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease;
+    visibility: hidden;
+    transform: translateX(0);
     pointer-events: none;
     overflow-y: auto;
     overflow-x: hidden;
@@ -646,13 +646,34 @@ body {
 
 .page.active {
     opacity: 1;
+    visibility: visible;
     transform: translateX(0);
     pointer-events: auto;
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
 }
 
-.page.prev {
+.page.slide-out-left {
     opacity: 0;
+    visibility: visible;
     transform: translateX(-100%);
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
+}
+
+.page.slide-out-right {
+    opacity: 0;
+    visibility: visible;
+    transform: translateX(100%);
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
+}
+
+.page.enter-from-right {
+    transform: translateX(100%);
+    visibility: visible;
+}
+
+.page.enter-from-left {
+    transform: translateX(-100%);
+    visibility: visible;
 }
 
 .page-inner {
