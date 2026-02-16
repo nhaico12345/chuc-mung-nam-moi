@@ -22,7 +22,7 @@ const PERF = {
 };
 
 // ---- CẤU HÌNH NỘI DUNG ----
-const NEW_YEAR_DATE = new Date('2026-02-18T00:00:00+07:00');
+const NEW_YEAR_DATE = new Date('2026-02-17T00:00:00+07:00');
 const LOVER_NAME = 'Hoàng Thị Anh Thơ';
 const MESSAGE_TEXT = 'Chúc mừng năm mới, Cô Gái nhỏ của anh..!\n\nChúc cho chúng ta năm mới luôn ngập tràn yêu thương, bình yên và những kỉ niệm đẹp mãi không quên.\n\nChúng ta có được nhau là duyên trời, hãy trân trọng tình yêu này mãi Em nhé!\n\nChúc mừng năm mới, tình yêu của đời Anh.\n\nChúc Em mạnh khỏe bình an và luôn nở nụ cười như những năm mới nữa Em yêu nhé..!\n\n"Mãi Yêu Em" 💕';
 
